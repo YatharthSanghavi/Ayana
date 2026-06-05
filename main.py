@@ -176,4 +176,4 @@ def road_trip():
         return jsonify({"error": f"Failed to generate road trip plan: {str(e)}"}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run()
