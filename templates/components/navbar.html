@@ -1,0 +1,28 @@
+<nav class="nav" role="navigation" aria-label="Main navigation">
+  <div class="nav-backdrop"></div>
+
+  <a href="/" class="nav-logo" aria-label="Ayana home">
+    Wander<span>lust</span><span class="nav-logo-mark" aria-hidden="true"></span>
+  </a>
+
+  <ul class="nav-links" role="list">
+    <li><a href="/">Home</a></li>
+    <li><a href="/plan-trip">Plan Trip</a></li>
+    <li><a href="/road-trip">Road Trip</a></li>
+    <li><a href="/about">About</a></li>
+  </ul>
+
+  <div class="nav-cta">
+    {% if session.get('user_id') %}
+      <a href="/dashboard" class="btn btn-ghost">Dashboard</a>
+      <a href="/auth/logout" class="btn btn-terra">Log Out</a>
+    {% else %}
+      <a href="/auth/login" class="btn btn-ghost">Log In</a>
+      <a href="/auth/signup" class="btn btn-terra">Sign Up</a>
+    {% endif %}
+  </div>
+
+  <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log In — Ayana</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 768px) {
+      .auth-page { grid-template-columns: 1fr; }
+      .auth-side { display: none; }
+    }
+
+    /* Left decorative side */
+    .auth-side {
+      position: relative;
+      overflow: hidden;
+      background: var(--ink-2);
+    }
+    .auth-side-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 50%, rgba(196,98,58,0.14), transparent),
+        linear-gradient(160deg, #0e0c0a, #201510);
+    }
+    .auth-side-topo {
+      position: absolute; inset: 0;
+      background-image: repeating-radial-gradient(ellipse 80% 60% at 50% 50%, transparent 0px, transparent 28px, rgba(196,98,58,0.04) 28px, rgba(196,98,58,0.04) 29px);
+    }
+    .auth-side-content {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 4rem;
+    }
+    .auth-side-quote {
+      font-family: var(--ff-display);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--cream);
+      line-height: 1.2;
+      margin-bottom: 1.2rem;
+    }
+    .auth-side-quote em { font-style: italic; font-weight: 400; color: var(--terra-lt); }
+    .auth-side-desc { font-size: 0.9rem; color: var(--stone); line-height: 1.8; max-width: 300px; }
+    .auth-dest-list { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 2.5rem; }
+    .auth-dest-item {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      padding: 0.75rem 1rem;
+      background: rgba(196,98,58,0.06);
+      border: 1px solid rgba(196,98,58,0.14);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      color: var(--cream-2);
+    }
+    .auth-dest-emoji { font-size: 1.2rem; flex-shrink: 0; }
+    .auth-dest-name { font-weight: 500; }
+    .auth-dest-days { margin-left: auto; font-size: 0.72rem; color: var(--stone); }
+
+    /* Right form side */
+    .auth-form-side {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(2rem,8vw,5rem) clamp(1.5rem,6vw,4rem);
+      background: var(--ink);
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+    }
+    .auth-brand {
+      font-family: var(--ff-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--terra);
+      margin-bottom: 2.5rem;
+      display: flex;
+      align-items: baseline;
+      gap: 0.1em;
+    }
+    .auth-brand span { color: var(--cream); font-weight: 400; font-style: italic; }
+    .auth-brand-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--terra); margin-left: 2px; margin-bottom: 2px; }
+    .auth-header { margin-bottom: 2.2rem; }
+    .auth-title { font-family: var(--ff-display); font-size: 1.9rem; color: var(--cream); font-weight: 700; margin-bottom: 0.4rem; }
+    .auth-sub { font-size: 0.87rem; color: var(--stone); }
+
+    .form-group { margin-bottom: 1.1rem; position: relative; }
+
+    .pw-wrap { position: relative; }
+    .pw-toggle {
+      position: absolute;
+      right: 0.8rem; top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      color: var(--stone);
+      padding: 0.2rem;
+      transition: color var(--transition-fast);
+    }
+    .pw-toggle:hover { color: var(--cream); }
+
+    .auth-extras {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0.5rem 0 1.5rem;
+      font-size: 0.8rem;
+      color: var(--stone);
+    }
+    .auth-checkbox { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+    .auth-checkbox input { accent-color: var(--terra); }
+    .auth-link { color: var(--terra); transition: color var(--transition-fast); }
+    .auth-link:hover { color: var(--terra-lt); }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin: 1.5rem 0;
+      font-size: 0.75rem;
+      color: var(--stone);
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(196,98,58,0.14);
+    }
+
+    .auth-footer-text {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 0.83rem;
+      color: var(--stone);
+    }
+    .auth-footer-text a { color: var(--terra); font-weight: 500; }
+    .auth-footer-text a:hover { color: var(--terra-lt); }
+  </style>
+</head>
+<body>
+
+<div class="auth-page">
+  <!-- Left side -->
+  <div class="auth-side">
+    <div class="auth-side-bg"></div>
+    <div class="auth-side-topo"></div>
+    <div class="auth-side-content">
+      <div class="auth-side-quote">Your saved trips<br><em>await you</em></div>
+      <p class="auth-side-desc">Log in to access all your planned itineraries, road trips, and travel notes — from anywhere.</p>
+      <div class="auth-dest-list">
+        <div class="auth-dest-item">
+          <span class="auth-dest-emoji">🗾</span>
+          <div>
+            <div class="auth-dest-name">Tokyo Itinerary</div>
+            <div style="font-size:0.72rem;color:var(--stone);">7 days · Solo</div>
+          </div>
+          <span class="auth-dest-days">Saved</span>
+        </div>
+        <div class="auth-dest-item">
+          <span class="auth-dest-emoji">🌴</span>
+          <div>
+            <div class="auth-dest-name">Goa Road Trip</div>
+            <div style="font-size:0.72rem;color:var(--stone);">4 days · Motorcycle</div>
+          </div>
+          <span class="auth-dest-days">Saved</span>
+        </div>
+        <div class="auth-dest-item" style="opacity:0.45;">
+          <span class="auth-dest-emoji">🏔️</span>
+          <div>
+            <div class="auth-dest-name">Manali Trip</div>
+            <div style="font-size:0.72rem;color:var(--stone);">5 days · Budget</div>
+          </div>
+          <span class="auth-dest-days">Log in to view</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right form side -->
+  <div class="auth-form-side">
+    <div class="auth-card animate-fade-up">
+      <div class="auth-brand">Wander<span>lust</span><span class="auth-brand-dot"></span></div>
+      <div class="auth-header">
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-sub">Log in to access your saved itineraries.</p>
+      </div>
+
+      <form action="login" method="POST">
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <input type="email" id="email" name="email" class="form-control"
+            placeholder="you@example.com" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="password" name="password" class="form-control"
+              placeholder="Your password" required autocomplete="current-password" />
+            <button type="button" class="pw-toggle" id="pwToggle" aria-label="Toggle password">👁</button>
+          </div>
+        </div>
+        <div class="auth-extras">
+          <label class="auth-checkbox">
+            <input type="checkbox" name="remember" /> Remember me
+          </label>
+          <a href="#" class="auth-link">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn btn-terra btn-lg" style="width:100%;justify-content:center;">
+          Log In →
+        </button>
+      </form>
+
+      <div class="auth-footer-text">
+        Don't have an account? <a href="/auth/signup">Sign up free →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+<script>
+  const pwInput = document.getElementById('password');
+  const pwToggle = document.getElementById('pwToggle');
+  pwToggle?.addEventListener('click', () => {
+    const shaow = pwInput.type === 'password';
+    pwInput.type = show ? 'text' : 'password';
+    pwToggle.textContent = show ? '🙈' : '👁';
+  });
+</script>
+</body>
+</html>

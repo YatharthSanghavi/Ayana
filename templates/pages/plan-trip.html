@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plan a Trip — Ayana</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    /* ─── PAGE HEADER ─── */
+    .page-header {
+      padding: clamp(7rem,16vw,11rem) clamp(1.5rem,5%,3rem) 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-header-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 70% at 15% 50%, rgba(196,98,58,0.07), transparent),
+        linear-gradient(160deg, #0e0c0a 0%, #181310 100%);
+    }
+    .page-header-topo {
+      position: absolute; inset: 0;
+      background-image: repeating-radial-gradient(ellipse 70% 55% at 80% 50%, transparent 0px, transparent 30px, rgba(196,98,58,0.025) 30px, rgba(196,98,58,0.025) 31px);
+      pointer-events: none;
+    }
+    .page-header-content { position: relative; z-index: 1; max-width: 600px; }
+
+    /* ─── FORM WRAPPER ─── */
+    .form-wrapper {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 clamp(1.5rem,5%,3rem) 6rem;
+    }
+
+    /* ─── FORM CARD ─── */
+    .form-card {
+      padding: clamp(2rem,5vw,3rem);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(196,98,58,0.18);
+      background: rgba(20,16,12,0.7);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 24px 72px rgba(0,0,0,0.5);
+    }
+    .form-card-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(196,98,58,0.12);
+    }
+    .form-card-title { font-family: var(--ff-display); font-size: 1.35rem; color: var(--cream); font-weight: 600; }
+    .form-card-subtitle { font-size: 0.84rem; color: var(--stone); margin-top: 0.3rem; }
+
+    /* ─── FORM GRID ─── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 680px) { .form-grid { grid-template-columns: 1fr; } }
+    .full-width { grid-column: 1 / -1; }
+
+    .form-group {
+      opacity: 0;
+      animation: slideUp 0.5s ease both;
+    }
+    .form-group:nth-child(1) { animation-delay: 0.05s; }
+    .form-group:nth-child(2) { animation-delay: 0.1s; }
+    .form-group:nth-child(3) { animation-delay: 0.15s; }
+    .form-group:nth-child(4) { animation-delay: 0.2s; }
+    .form-group:nth-child(5) { animation-delay: 0.25s; }
+    .form-group:nth-child(6) { animation-delay: 0.3s; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── SUBMIT ROW ─── */
+    .form-submit-row {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 1rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(196,98,58,0.1);
+      flex-wrap: wrap;
+    }
+    .btn-terra:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* ─── RESULT ─── */
+    #resultContainer {
+      max-width: 860px;
+      margin: 2rem auto 0;
+      opacity: 0;
+      animation: fadeUp 0.5s ease both;
+    }
+    .result-card {
+      padding: clamp(2rem,5vw,3rem);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(196,98,58,0.2);
+      background: rgba(20,16,12,0.7);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 24px 72px rgba(0,0,0,0.5);
+    }
+    .result-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(196,98,58,0.14);
+      flex-wrap: wrap;
+    }
+    .result-meta { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.7rem; }
+    .result-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--terra);
+      background: rgba(196,98,58,0.1);
+      border: 1px solid rgba(196,98,58,0.2);
+      padding: 0.22rem 0.6rem;
+      border-radius: 4px;
+    }
+
+    /* ─── BUDGET SUMMARY CARDS ─── */
+    .budget-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.8rem;
+      margin: 1.5rem 0 2rem;
+    }
+    .budget-card {
+      padding: 1rem;
+      background: rgba(196,98,58,0.06);
+      border: 1px solid rgba(196,98,58,0.14);
+      border-radius: var(--radius-sm);
+      text-align: center;
+    }
+    .budget-card-val { font-family: var(--ff-display); font-size: 1.2rem; color: var(--terra-lt); font-weight: 700; }
+    .budget-card-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone); margin-top: 0.25rem; }
+
+    /* ─── MAP ─── */
+    #map {
+      margin-top: 2rem;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid rgba(196,98,58,0.15);
+    }
+
+    /* ─── FOCUS ─── */
+    .form-control:focus-visible { outline: none; }
+  </style>
+</head>
+<body>
+
+{% include 'components/navbar.html' %}
+
+<!-- ── PAGE HEADER ── -->
+<header class="page-header">
+  <div class="page-header-bg"></div>
+  <div class="page-header-topo"></div>
+  <div class="page-header-content">
+    <div class="section-label">Plan Your Journey</div>
+    <h1 class="section-title">Design Your<br><em>Dream Trip</em></h1>
+    <div class="terra-line"></div>
+    <p class="section-sub" style="margin-top:0.8rem;">
+      Tell us where, when, and how you like to travel. Our AI will build a complete, day-by-day itinerary tailored to you.
+    </p>
+  </div>
+</header>
+
+<!-- ── FORM SECTION ── -->
+<section style="padding-top: 2.5rem;">
+  <div class="form-wrapper">
+
+    <!-- FORM CARD -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <div class="form-card-title">Trip Details</div>
+        <div class="form-card-subtitle">Fill in the details below — the more specific, the better your plan.</div>
+      </div>
+
+      <form id="planForm">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label class="form-label" for="destination"><span class="required">*</span> Destination</label>
+            <input type="text" id="destination" class="form-control" name="destination"
+              placeholder="e.g. Paris, Tokyo, Shimla..." required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="days"><span class="required">*</span> Duration (Days)</label>
+            <input type="number" id="days" class="form-control" name="days"
+              min="1" max="30" placeholder="e.g. 5" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="budget"><span class="required">*</span> Budget Level</label>
+            <select id="budget" class="form-control" name="budget" required>
+              <option value="" disabled selected>Select budget…</option>
+              <option value="budget">🎒 Backpacker / Budget</option>
+              <option value="mid">⭐ Mid-range / Standard</option>
+              <option value="luxury">✨ Luxury / Premium</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="travelers"><span class="required">*</span> Who's Traveling?</label>
+            <select id="travelers" class="form-control" name="travelers" required>
+              <option value="" disabled selected>Select group…</option>
+              <option value="solo">👤 Solo Traveler</option>
+              <option value="couple">💑 Couple</option>
+              <option value="family">👨‍👩‍👧‍👦 Family with Kids</option>
+              <option value="friends">👥 Group of Friends</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tripType"><span class="required">*</span> Trip Style</label>
+            <select id="tripType" class="form-control" name="tripType" required>
+              <option value="" disabled selected>Select style…</option>
+              <option value="relax">🏖️ Relaxation & Beaches</option>
+              <option value="culture">🏛️ Culture & History</option>
+              <option value="adventure">🏔️ Adventure & Outdoors</option>
+              <option value="food">🍽️ Food & Culinary</option>
+              <option value="nightlife">🎉 Party & Nightlife</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label class="form-label" for="interests">Special Interests / Requests <span style="color:var(--stone);font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+            <textarea id="interests" class="form-control" name="interests" rows="3"
+              placeholder="e.g. Must visit local markets, avoid tourist traps, include a hiking trail, vegetarian food only…"></textarea>
+          </div>
+        </div>
+
+        <div class="form-submit-row">
+          <span style="font-size:0.78rem;color:var(--stone);">Takes about 10–15 seconds</span>
+          <button type="submit" class="btn btn-terra btn-lg" id="generateBtn">
+            ✦ Generate Itinerary
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- RESULT SECTION -->
+    <div id="resultContainer" style="display:none;">
+      <div class="result-card">
+        <div class="result-header">
+          <div>
+            <h2 class="section-title" style="font-size:1.6rem;">Your <em>Itinerary</em></h2>
+            <div class="result-meta" id="resultMeta"></div>
+          </div>
+          <button type="button" class="btn btn-ghost" id="resetBtn">← New Trip</button>
+        </div>
+
+        <!-- Budget summary strip -->
+        <div class="budget-strip" id="budgetStrip"></div>
+
+        <!-- Markdown content -->
+        <div id="resultContent" class="markdown-body"></div>
+
+        <!-- Map -->
+        <div id="map"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% include 'components/footer.html' %}
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+<script>
+  const planForm      = document.getElementById('planForm');
+  const generateBtn   = document.getElementById('generateBtn');
+  const resultContainer = document.getElementById('resultContainer');
+  const resetBtn      = document.getElementById('resetBtn');
+
+  planForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const originalHTML = generateBtn.innerHTML;
+    generateBtn.innerHTML = '<span class="spinner"></span> Generating…';
+    generateBtn.disabled = true;
+
+    const data = Object.fromEntries(new FormData(this).entries());
+
+    try {
+      const response = await fetch('/plan-trip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+
+      if (response.ok && result.data) {
+        const { markdown, budget, locations } = result.data;
+
+        // Render markdown
+        document.getElementById('resultContent').innerHTML = marked.parse(markdown || '');
+
+        // Render map
+        document.getElementById('map').innerHTML = result.map || '';
+
+        // Budget strip
+        const b = budget || {};
+        const total = b.trip_total_usd || {};
+        const perDay = b.per_day_usd || {};
+        const budgetStrip = document.getElementById('budgetStrip');
+        budgetStrip.innerHTML = [
+          { val: `$${total.grand_total || '—'}`, label: 'Grand Total' },
+          { val: `$${perDay.total || '—'}/day`, label: 'Per Day Avg' },
+          { val: `$${total.accommodation || '—'}`, label: 'Accommodation' },
+          { val: `$${total.food || '—'}`, label: 'Food & Drinks' },
+          { val: `$${total.transport || '—'}`, label: 'Transport' },
+          { val: `$${total.activities || '—'}`, label: 'Activities' },
+        ].map(c => `<div class="budget-card"><div class="budget-card-val">${c.val}</div><div class="budget-card-label">${c.label}</div></div>`).join('');
+
+        // Meta tags
+        const dest = data.destination;
+        const days = data.days;
+        document.getElementById('resultMeta').innerHTML =
+          `<span class="result-tag">📍 ${dest}</span>
+           <span class="result-tag">📅 ${days} days</span>
+           <span class="result-tag">💰 ${data.budget}</span>
+           <span class="result-tag">👥 ${data.travelers}</span>`;
+
+        // Show and scroll
+        resultContainer.style.display = 'block';
+        resultContainer.style.opacity = '0';
+        setTimeout(() => {
+          resultContainer.style.animation = 'fadeUp 0.5s ease both';
+          resultContainer.style.opacity = '';
+          resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 80);
+      } else {
+        showToast(result.error || 'Something went wrong. Please try again.', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Connection error. Please try again.', 'error');
+    } finally {
+      generateBtn.innerHTML = originalHTML;
+      generateBtn.disabled = false;
+    }
+  });
+
+  resetBtn?.addEventListener('click', () => {
+    planForm.reset();
+    resultContainer.style.display = 'none';
+    document.getElementById('resultContent').innerHTML = '';
+    document.getElementById('map').innerHTML = '';
+    document.getElementById('budgetStrip').innerHTML = '';
+    planForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // Pre-fill destination from URL query ?dest=
+  const urlDest = new URLSearchParams(location.search).get('dest');
+  if (urlDest) document.getElementById('destination').value = urlDest;
+</script>
+</body>
+</html>

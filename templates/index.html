@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ayana — AI Travel Planner</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 0 clamp(1.5rem, 5%, 3rem);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Richer layered background — no animation */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 80% at 72% 52%, rgba(196,98,58,0.13), transparent 58%),
+        radial-gradient(ellipse 40% 55% at 10% 85%, rgba(139,62,32,0.22), transparent 65%),
+        radial-gradient(ellipse 35% 40% at 50% 0%,  rgba(196,98,58,0.05), transparent 70%),
+        linear-gradient(165deg, #0f0d0b 0%, #191411 45%, #100e0c 100%);
+    }
+
+    /* Topographic contour lines */
+    .hero-topo {
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(ellipse 90% 50% at 70% 50%, rgba(196,98,58,0.05) 0%, transparent 100%),
+        repeating-radial-gradient(ellipse 65% 45% at 68% 52%,
+          transparent 0px, transparent 22px,
+          rgba(196,98,58,0.035) 22px, rgba(196,98,58,0.035) 23px);
+      pointer-events: none;
+    }
+
+    /* ── KEYFRAMES ── */
+    @keyframes orbDrift1 {
+      0%, 100% { transform: translateY(-50%) translate(0px, 0px) scale(1); }
+      33%       { transform: translateY(-50%) translate(18px, -22px) scale(1.04); }
+      66%       { transform: translateY(-50%) translate(-12px, 16px) scale(0.97); }
+    }
+    @keyframes orbDrift2 {
+      0%, 100% { transform: translate(0px, 0px); }
+      40%       { transform: translate(-20px, -18px); }
+      75%       { transform: translate(14px, 10px); }
+    }
+    @keyframes orbDrift3 {
+      0%, 100% { transform: translate(0px, 0px) scale(1); }
+      50%       { transform: translate(10px, 14px) scale(1.08); }
+    }
+    @keyframes heroFadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes heroCardSlide {
+      from { opacity: 0; transform: translateY(-50%) translateX(40px); }
+      to   { opacity: 1; transform: translateY(-50%) translateX(0); }
+    }
+    @keyframes floatCard1 {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-8px); }
+    }
+    @keyframes floatCard2 {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(7px); }
+    }
+    @keyframes aiPulse {
+      0%, 100% { box-shadow: 0 0 8px rgba(196,98,58,0.9); transform: scale(1); }
+      50%       { box-shadow: 0 0 16px rgba(196,98,58,1), 0 0 28px rgba(196,98,58,0.4); transform: scale(1.25); }
+    }
+    @keyframes eyebrowGlow {
+      0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); border-color: rgba(196,98,58,0.32); }
+      50%       { box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0 18px rgba(196,98,58,0.18); border-color: rgba(196,98,58,0.55); }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; } 50% { opacity: 0; }
+    }
+    @keyframes gradientShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes statCountUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Ambient orbs — now animated */
+    .hero-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+    }
+    .hero-orb-1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(196,98,58,0.14), transparent 68%);
+      right: -80px; top: 50%;
+      transform: translateY(-50%);
+      animation: orbDrift1 14s ease-in-out infinite;
+    }
+    .hero-orb-2 {
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(139,62,32,0.22), transparent 70%);
+      left: 28%; bottom: -80px;
+      animation: orbDrift2 18s ease-in-out infinite;
+    }
+    .hero-orb-3 {
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(196,98,58,0.09), transparent 70%);
+      left: 2%; top: 14%;
+      animation: orbDrift3 11s ease-in-out infinite;
+    }
+    /* Extra warm accent orb for depth */
+    .hero-orb-4 {
+      width: 140px; height: 140px;
+      background: radial-gradient(circle, rgba(196,98,58,0.07), transparent 70%);
+      left: 55%; bottom: 8%;
+      animation: orbDrift2 16s ease-in-out infinite reverse;
+    }
+
+    /* Grid lines */
+    .hero-grid-lines {
+      position: absolute;
+      right: 0; top: 0;
+      width: 55%; height: 100%;
+      background-image:
+        linear-gradient(rgba(196,98,58,0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(196,98,58,0.045) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: radial-gradient(ellipse 75% 70% at 60% 50%, black 20%, transparent 75%);
+      -webkit-mask-image: radial-gradient(ellipse 75% 70% at 60% 50%, black 20%, transparent 75%);
+      pointer-events: none;
+    }
+
+    /* ── HERO CONTENT ── */
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 600px;
+      padding-top: 90px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.67rem;
+      font-weight: 600;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--terra-lt);
+      border: 1px solid rgba(196,98,58,0.32);
+      padding: 0.4rem 1rem;
+      border-radius: 4px;
+      background: rgba(196,98,58,0.09);
+      margin-bottom: 1.7rem;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+      /* entrance + subtle glow loop */
+      opacity: 0;
+      animation: heroFadeUp 0.7s ease forwards 0.1s, eyebrowGlow 3.5s ease-in-out infinite 1s;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--terra);
+      box-shadow: 0 0 8px rgba(196,98,58,0.8);
+      flex-shrink: 0;
+    }
+
+    .hero-title {
+      font-family: var(--ff-display);
+      font-size: clamp(3.2rem, 7.5vw, 5.8rem);
+      font-weight: 900;
+      line-height: 1.03;
+      color: var(--cream);
+      letter-spacing: -0.025em;
+      opacity: 0;
+      animation: heroFadeUp 0.75s ease forwards 0.3s;
+    }
+    .hero-title .terra {
+      background: linear-gradient(135deg, var(--terra-lt) 0%, var(--terra) 40%, #b05530 60%, var(--terra-lt) 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 4s ease infinite 1.2s;
+    }
+    .hero-title .italic { font-style: italic; font-weight: 400; }
+
+    /* Static destination label — no typewriter */
+    .hero-dest-wrap {
+      display: inline-block;
+      position: relative;
+      color: var(--terra-lt);
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .hero-sub {
+      font-size: clamp(0.95rem, 2vw, 1.08rem);
+      color: var(--stone);
+      margin-top: 1.7rem;
+      line-height: 1.88;
+      max-width: 460px;
+      opacity: 0;
+      animation: heroFadeUp 0.75s ease forwards 0.55s;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 0.85rem;
+      margin-top: 2.4rem;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: heroFadeUp 0.75s ease forwards 0.75s;
+    }
+
+    /* Stat row */
+    .hero-stats {
+      display: flex;
+      gap: 2.5rem;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(196,98,58,0.14);
+      opacity: 0;
+      animation: heroFadeUp 0.75s ease forwards 0.95s;
+    }
+    .stat-item { position: relative; }
+    .stat-num {
+      font-family: var(--ff-display);
+      font-size: 1.95rem;
+      font-weight: 700;
+      color: var(--terra);
+      line-height: 1;
+      transition: color 0.2s, text-shadow 0.2s;
+    }
+    .stat-item:hover .stat-num {
+      color: var(--terra-lt);
+      text-shadow: 0 0 22px rgba(196,98,58,0.45);
+    }
+    .stat-label {
+      font-size: 0.67rem;
+      color: var(--stone);
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      margin-top: 0.3rem;
+    }
+    .stat-item:not(:last-child) {
+      padding-right: 2.5rem;
+      border-right: 1px solid rgba(196,98,58,0.14);
+    }
+
+    /* ── HERO VISUAL CARD ── */
+    .hero-visual {
+      position: absolute;
+      right: clamp(2rem, 6%, 5rem);
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
+      width: min(380px, 36vw);
+      opacity: 0;
+      animation: heroCardSlide 0.85s cubic-bezier(0.22,1,0.36,1) forwards 0.6s;
+    }
+
+    /* Richer card — deeper layers, stronger presence */
+    .trip-preview {
+      background:
+        linear-gradient(160deg, rgba(28,20,14,0.96) 0%, rgba(18,14,10,0.98) 100%);
+      border: 1px solid rgba(196,98,58,0.28);
+      border-radius: var(--radius-lg);
+      padding: 1.7rem;
+      backdrop-filter: blur(24px);
+      box-shadow:
+        0 32px 80px rgba(0,0,0,0.75),
+        0 0 0 1px rgba(255,255,255,0.04),
+        inset 0 1px 0 rgba(196,98,58,0.12);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .trip-preview:hover {
+      border-color: rgba(196,98,58,0.45);
+      box-shadow:
+        0 32px 80px rgba(0,0,0,0.75),
+        0 0 50px rgba(196,98,58,0.12),
+        0 0 0 1px rgba(255,255,255,0.04),
+        inset 0 1px 0 rgba(196,98,58,0.18);
+    }
+
+    /* Thin terra accent line at top of card */
+    .trip-preview::before {
+      content: '';
+      display: block;
+      height: 2px;
+      margin: -1.7rem -1.7rem 1.5rem;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      background: linear-gradient(90deg, transparent, rgba(196,98,58,0.7) 40%, rgba(224,125,85,0.5) 60%, transparent);
+    }
+
+    .trip-preview-header {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      margin-bottom: 1.2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(196,98,58,0.13);
+    }
+    .trip-flag {
+      font-size: 1.8rem;
+      width: 46px; height: 46px;
+      background: rgba(196,98,58,0.12);
+      border: 1px solid rgba(196,98,58,0.18);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .trip-dest-name { font-family: var(--ff-display); font-size: 1.12rem; color: var(--cream); font-weight: 600; }
+    .trip-dest-meta { font-size: 0.72rem; color: var(--stone); margin-top: 0.18rem; }
+
+    .trip-days { display: flex; flex-direction: column; gap: 0.55rem; }
+    .trip-day {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.62rem 0.85rem;
+      background: rgba(196,98,58,0.055);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(196,98,58,0.1);
+      font-size: 0.8rem;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .trip-day:hover {
+      background: rgba(196,98,58,0.1);
+      border-color: rgba(196,98,58,0.22);
+    }
+    .trip-day-num {
+      width: 22px; height: 22px;
+      background: rgba(196,98,58,0.22);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 700;
+      color: var(--terra-lt);
+      flex-shrink: 0;
+    }
+    .trip-day-title { color: var(--cream-2); font-weight: 500; flex: 1; }
+    .trip-day-cost { color: var(--terra); font-weight: 600; font-size: 0.75rem; }
+
+    .trip-ai-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin-top: 1.1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(196,98,58,0.11);
+      font-size: 0.72rem;
+      color: var(--stone);
+    }
+    /* Pulsing AI dot */
+    .ai-dot {
+      width: 7px; height: 7px;
+      background: var(--terra);
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(196,98,58,0.9);
+      flex-shrink: 0;
+      animation: aiPulse 2s ease-in-out infinite;
+    }
+
+    /* ── FLOAT CARDS — gentle bob animation ── */
+    .hero-float-card {
+      position: absolute;
+      background: rgba(18,14,10,0.9);
+      border: 1px solid rgba(196,98,58,0.22);
+      border-radius: var(--radius);
+      padding: 0.85rem 1.1rem;
+      backdrop-filter: blur(16px);
+      font-size: 0.78rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .hero-float-card:hover {
+      border-color: rgba(196,98,58,0.4);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(196,98,58,0.1);
+    }
+    .hero-float-1 {
+      top: 18%;
+      right: calc(min(380px, 36vw) + clamp(2rem, 6%, 5rem) + 1.5rem);
+      animation: floatCard1 5s ease-in-out infinite 1.5s;
+    }
+    .hero-float-2 {
+      bottom: 28%;
+      right: calc(min(380px, 36vw) + clamp(2rem, 6%, 5rem) - 4rem);
+      animation: floatCard2 6s ease-in-out infinite 2s;
+    }
+    .float-card-label { color: var(--stone); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.28rem; }
+    .float-card-val { color: var(--cream); font-weight: 600; }
+    .float-card-val span { color: var(--terra); }
+
+    /* ── FEATURE SECTION ── */
+    .features-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-bottom: 3rem;
+    }
+
+    /* ── HOW SECTION ── */
+    .how-section { background: rgba(255,255,255,0.01); }
+
+    /* ── DEST SECTION heading ── */
+    .dest-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .hero-visual { display: none; }
+      .hero-float-card { display: none; }
+    }
+    @media (max-width: 768px) {
+      .hero-stats { gap: 1.8rem; flex-wrap: wrap; }
+    }
+    @media (max-width: 480px) {
+      .hero-actions { flex-direction: column; }
+      .hero-actions .btn { width: 100%; justify-content: center; }
+      .hero-stats { gap: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+{% include 'components/navbar.html' %}
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-topo"></div>
+  <div class="hero-grid-lines"></div>
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+  <div class="hero-orb hero-orb-3"></div>
+  <div class="hero-orb hero-orb-4"></div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">✦ AI-Powered Travel Planning</div>
+    <h1 class="hero-title">
+      Your Next<br>
+      <span class="hero-dest-wrap italic terra" id="heroDestText">Adventure</span><br>
+      <span class="italic" style="color:var(--cream-3);font-size:0.8em;">Starts Here</span>
+    </h1>
+    <p class="hero-sub">
+      Tell us where you want to go. Our AI builds a complete, day-by-day itinerary — with real venues, real costs, and hidden gems most tourists never find.
+    </p>
+    <div class="hero-actions">
+      <a href="/plan-trip" class="btn btn-terra btn-lg">✦ Plan a Trip</a>
+      <a href="/road-trip" class="btn btn-outline btn-lg">🚗 Road Trip</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num">50+</div>
+        <div class="stat-label">Countries</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">12k+</div>
+        <div class="stat-label">Trips Planned</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">4.9★</div>
+        <div class="stat-label">Avg. Rating</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero visual card -->
+  <div class="hero-visual">
+    <div class="trip-preview">
+      <div class="trip-preview-header">
+        <div class="trip-flag">🗾</div>
+        <div>
+          <div class="trip-dest-name">Tokyo, Japan</div>
+          <div class="trip-dest-meta">7 days · Solo · Mid-range</div>
+        </div>
+      </div>
+      <div class="trip-days">
+        <div class="trip-day">
+          <div class="trip-day-num">1</div>
+          <div class="trip-day-title">Arrival & Shinjuku</div>
+          <div class="trip-day-cost">$82</div>
+        </div>
+        <div class="trip-day">
+          <div class="trip-day-num">2</div>
+          <div class="trip-day-title">Asakusa & Tsukiji</div>
+          <div class="trip-day-cost">$67</div>
+        </div>
+        <div class="trip-day">
+          <div class="trip-day-num">3</div>
+          <div class="trip-day-title">Harajuku & Shibuya</div>
+          <div class="trip-day-cost">$74</div>
+        </div>
+        <div class="trip-day" style="opacity:0.5; font-style:italic;">
+          <div class="trip-day-num" style="opacity:0.5">…</div>
+          <div class="trip-day-title">4 more days</div>
+          <div class="trip-day-cost">~$480</div>
+        </div>
+      </div>
+      <div class="trip-ai-badge">
+        <div class="ai-dot"></div>
+        Generated by Gemini AI in 4.2s
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section class="section" style="padding-top: 5rem;">
+  <div class="container">
+    <div class="features-header" data-reveal>
+      <div>
+        <div class="section-label">Why Ayana</div>
+        <h2 class="section-title">Plan Smarter,<br><em>Travel Better</em></h2>
+        <div class="terra-line"></div>
+      </div>
+      <p class="section-sub">Every detail handled — from sunrise coffee spots to late-night street food, with real prices at every step.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card" data-reveal data-delay="0s">
+        <span class="feature-icon">🗺️</span>
+        <div class="feature-title">Day-by-Day Itineraries</div>
+        <p class="feature-desc">Morning, afternoon, and evening breakdowns with named venues, transit tips, and opening hours for every day of your trip.</p>
+        <a href="/plan-trip" class="feature-link">Start Planning →</a>
+      </div>
+      <div class="feature-card" data-reveal data-delay="0.1s">
+        <span class="feature-icon">🤖</span>
+        <div class="feature-title">Gemini AI Intelligence</div>
+        <p class="feature-desc">Understands nuance — budget constraints, dietary needs, accessibility, travel style. The more detail you give, the better the plan.</p>
+        <a href="/plan-trip" class="feature-link">Explore →</a>
+      </div>
+      <div class="feature-card" data-reveal data-delay="0.2s">
+        <span class="feature-icon">💰</span>
+        <div class="feature-title">Real Budget Breakdowns</div>
+        <p class="feature-desc">Per-day cost tables with exact entry fees, meal prices, and transport costs in local currency and USD. No vague guesstimates.</p>
+        <a href="/plan-trip" class="feature-link">See a sample →</a>
+      </div>
+      <div class="feature-card" data-reveal data-delay="0.3s">
+        <span class="feature-icon">📍</span>
+        <div class="feature-title">Hidden Gems Included</div>
+        <p class="feature-desc">Every itinerary includes off-the-beaten-path suggestions, local insider tips, and lesser-known spots most travel blogs never mention.</p>
+        <a href="/plan-trip" class="feature-link">Try it →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" style="margin: 0 clamp(1.5rem,5%,3rem);"></div>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="section how-section">
+  <div class="container">
+    <div class="text-center" data-reveal>
+      <div class="section-label">The Process</div>
+      <h2 class="section-title">Four Steps to<br><em>Your Perfect Trip</em></h2>
+      <div class="terra-line center"></div>
+    </div>
+    <div class="how-grid">
+      <div class="how-step" data-reveal data-delay="0.05s">
+        <div class="how-num">01</div>
+        <div class="how-step-title">Choose Your Mode</div>
+        <p class="how-step-desc">City trip or road odyssey? Pick the planner that fits your adventure style.</p>
+      </div>
+      <div class="how-step" data-reveal data-delay="0.15s">
+        <div class="how-num">02</div>
+        <div class="how-step-title">Fill Your Details</div>
+        <p class="how-step-desc">Destination, dates, budget, travel style, dietary preferences — the more you share, the better your plan.</p>
+      </div>
+      <div class="how-step" data-reveal data-delay="0.25s">
+        <div class="how-num">03</div>
+        <div class="how-step-title">AI Builds Your Plan</div>
+        <p class="how-step-desc">Gemini AI crafts a structured, practical, personalized itinerary in seconds — not hours.</p>
+      </div>
+      <div class="how-step" data-reveal data-delay="0.35s">
+        <div class="how-num">04</div>
+        <div class="how-step-title">Save &amp; Explore</div>
+        <p class="how-step-desc">Download, share, or save your plan. Return anytime to refine it from your personal dashboard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── POPULAR DESTINATIONS ── -->
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+    <div class="dest-header" data-reveal>
+      <div>
+        <div class="section-label">Popular Destinations</div>
+        <h2 class="section-title">Where Will You<br><em>Wander</em> Next?</h2>
+      </div>
+      <a href="/plan-trip" class="btn btn-outline">View All →</a>
+    </div>
+    <div class="dest-scroll" data-reveal>
+      <div class="dest-tile" onclick="location.href='/plan-trip?dest=Goa'">
+        <span class="dest-tile-emoji">🌴</span>
+        <div class="dest-tile-name">Goa</div>
+        <div class="dest-tile-country">India</div>
+        <div class="dest-tile-tag">Beaches</div>
+      </div>
+      <div class="dest-tile" onclick="location.href='/plan-trip?dest=Bali'">
+        <span class="dest-tile-emoji">🌺</span>
+        <div class="dest-tile-name">Bali</div>
+        <div class="dest-tile-country">Indonesia</div>
+        <div class="dest-tile-tag">Culture</div>
+      </div>
+      <div class="dest-tile" onclick="location.href='/plan-trip?dest=Tokyo'">
+        <span class="dest-tile-emoji">🗾</span>
+        <div class="dest-tile-name">Tokyo</div>
+        <div class="dest-tile-country">Japan</div>
+        <div class="dest-tile-tag">Urban</div>
+      </div>
+      <div class="dest-tile" onclick="location.href='/plan-trip?dest=Paris'">
+        <span class="dest-tile-emoji">🗼</span>
+        <div class="dest-tile-name">Paris</div>
+        <div class="dest-tile-country">France</div>
+        <div class="dest-tile-tag">Romance</div>
+      </div>
+      <div class="dest-tile" onclick="location.href='/plan-trip?dest=Manali'">
+        <span class="dest-tile-emoji">🏔️</span>
+        <div class="dest-tile-name">Manali</div>
+        <div class="dest-tile-country">India</div>
+        <div class="dest-tile-tag">Mountains</div>
+      </div>
+      <div class="dest-tile" onclick="location.href='/plan-trip?dest=Dubai'">
+        <span class="dest-tile-emoji">🌆</span>
+        <div class="dest-tile-name">Dubai</div>
+        <div class="dest-tile-country">UAE</div>
+        <div class="dest-tile-tag">Luxury</div>
+      </div>
+      <div class="dest-tile" onclick="location.href='/plan-trip?dest=Rishikesh'">
+        <span class="dest-tile-emoji">🕉️</span>
+        <div class="dest-tile-name">Rishikesh</div>
+        <div class="dest-tile-country">India</div>
+        <div class="dest-tile-tag">Spiritual</div>
+      </div>
+      <div class="dest-tile" onclick="location.href='/plan-trip?dest=Singapore'">
+        <span class="dest-tile-emoji">🦁</span>
+        <div class="dest-tile-name">Singapore</div>
+        <div class="dest-tile-country">Singapore</div>
+        <div class="dest-tile-tag">City</div>
+      </div>
+      <div class="dest-tile" onclick="location.href='/plan-trip?dest=Santorini'">
+        <span class="dest-tile-emoji">🏛️</span>
+        <div class="dest-tile-name">Santorini</div>
+        <div class="dest-tile-country">Greece</div>
+        <div class="dest-tile-tag">Islands</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS ── -->
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+    <div class="text-center" data-reveal>
+      <div class="section-label">Traveller Stories</div>
+      <h2 class="section-title">Loved by <em>Explorers</em></h2>
+      <div class="terra-line center"></div>
+    </div>
+    <div class="testimonials-row">
+      <div class="testimonial-card" data-reveal data-delay="0.05s">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Planned my entire 10-day Japan trip in minutes. The day-by-day breakdown was incredibly detailed — even suggested local noodle spots only locals know about."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">🧳</div>
+          <div>
+            <div class="testimonial-name">Priya S.</div>
+            <div class="testimonial-dest">Tokyo & Kyoto trip</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card" data-reveal data-delay="0.15s">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"The road trip planner is a game-changer. Mumbai to Goa route was perfectly timed — knew exactly where to stop, stay, and eat every single day."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">🚗</div>
+          <div>
+            <div class="testimonial-name">Rahul M.</div>
+            <div class="testimonial-dest">Coastal Road Trip</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card" data-reveal data-delay="0.25s">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">"Budget estimates were spot-on. Planned a luxury Bali honeymoon with realistic costs. Saved hours of research and the trip was absolutely flawless."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">🌺</div>
+          <div>
+            <div class="testimonial-name">Ananya K.</div>
+            <div class="testimonial-dest">Bali Honeymoon</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div style="position:relative; z-index:1;" data-reveal>
+    <div class="section-badge" style="margin: 0 auto 1.4rem;">✦ Ready to Explore?</div>
+    <h2 class="cta-title">Start Planning Your<br><em>Dream Journey</em> Today</h2>
+    <div class="terra-line center"></div>
+    <p class="section-sub text-center" style="margin: 1.5rem auto 2.5rem; max-width: 460px; color: var(--stone);">
+      No sign-up required. Generate your first itinerary instantly. Create an account to save and revisit anytime.
+    </p>
+    <div style="display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap;">
+      <a href="/plan-trip" class="btn btn-terra btn-xl">✦ Plan My Trip</a>
+      <a href="/road-trip" class="btn btn-outline btn-xl">🚗 Road Trip</a>
+    </div>
+  </div>
+</section>
+
+{% include 'components/footer.html' %}
+
+<script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+
+</body>
+</html>

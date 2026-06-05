@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Road Trip Planner — Ayana</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <style>
+    /* ─── PAGE HEADER ─── */
+    .page-header {
+      padding: clamp(7rem,16vw,11rem) clamp(1.5rem,5%,3rem) 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-header-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 55% 65% at 85% 50%, rgba(196,98,58,0.08), transparent),
+        linear-gradient(160deg, #0e0c0a 0%, #181310 100%);
+    }
+    .page-header-topo {
+      position: absolute; inset: 0;
+      background-image: repeating-radial-gradient(ellipse 65% 50% at 20% 50%, transparent 0px, transparent 30px, rgba(196,98,58,0.025) 30px, rgba(196,98,58,0.025) 31px);
+      pointer-events: none;
+    }
+    .page-header-road {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, rgba(196,98,58,0.4) 30%, rgba(196,98,58,0.4) 70%, transparent 100%);
+    }
+    .page-header-content { position: relative; z-index: 1; max-width: 600px; }
+
+    /* ─── FORM WRAPPER ─── */
+    .form-wrapper {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 clamp(1.5rem,5%,3rem) 6rem;
+    }
+
+    /* ─── FORM CARD ─── */
+    .form-card {
+      padding: clamp(2rem,5vw,3rem);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(196,98,58,0.18);
+      background: rgba(20,16,12,0.7);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 24px 72px rgba(0,0,0,0.5);
+    }
+    .form-card-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(196,98,58,0.12);
+    }
+    .form-card-title { font-family: var(--ff-display); font-size: 1.35rem; color: var(--cream); font-weight: 600; }
+    .form-card-subtitle { font-size: 0.84rem; color: var(--stone); margin-top: 0.3rem; }
+
+    /* Route input row */
+    .route-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 1rem;
+      align-items: end;
+      margin-bottom: 1.2rem;
+    }
+    .route-arrow {
+      padding-bottom: 0.6rem;
+      text-align: center;
+      color: var(--terra);
+      font-size: 1.2rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+    @media (max-width: 600px) {
+      .route-row { grid-template-columns: 1fr; }
+      .route-arrow { display: none; }
+    }
+
+    /* ─── FORM GRID ─── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+    .full-width { grid-column: 1 / -1; }
+
+    .form-group {
+      opacity: 0;
+      animation: slideUp 0.5s ease both;
+    }
+    .form-group:nth-child(1) { animation-delay: 0.05s; }
+    .form-group:nth-child(2) { animation-delay: 0.1s; }
+    .form-group:nth-child(3) { animation-delay: 0.15s; }
+    .form-group:nth-child(4) { animation-delay: 0.2s; }
+    .form-group:nth-child(5) { animation-delay: 0.25s; }
+    .form-group:nth-child(6) { animation-delay: 0.3s; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Date range info */
+    .date-range-info {
+      font-size: 0.75rem;
+      color: var(--stone);
+      margin-top: 0.4rem;
+      min-height: 1em;
+    }
+    .date-range-info.warn { color: #e07050; }
+    .date-range-info.ok { color: var(--terra); }
+
+    /* ─── SUBMIT ROW ─── */
+    .form-submit-row {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 1rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(196,98,58,0.1);
+      flex-wrap: wrap;
+    }
+    .btn-terra:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* ─── RESULT ─── */
+    #resultContainer {
+      max-width: 860px;
+      margin: 2rem auto 0;
+    }
+    .result-card {
+      padding: clamp(2rem,5vw,3rem);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(196,98,58,0.2);
+      background: rgba(20,16,12,0.7);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 24px 72px rgba(0,0,0,0.5);
+    }
+    .result-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(196,98,58,0.14);
+      flex-wrap: wrap;
+    }
+    .result-meta { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.7rem; }
+    .result-tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--terra);
+      background: rgba(196,98,58,0.1);
+      border: 1px solid rgba(196,98,58,0.2);
+      padding: 0.22rem 0.6rem;
+      border-radius: 4px;
+    }
+    .budget-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.8rem;
+      margin: 1.5rem 0 2rem;
+    }
+    .budget-card {
+      padding: 1rem;
+      background: rgba(196,98,58,0.06);
+      border: 1px solid rgba(196,98,58,0.14);
+      border-radius: var(--radius-sm);
+      text-align: center;
+    }
+    .budget-card-val { font-family: var(--ff-display); font-size: 1.2rem; color: var(--terra-lt); font-weight: 700; }
+    .budget-card-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone); margin-top: 0.25rem; }
+    #map {
+      margin-top: 2rem;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid rgba(196,98,58,0.15);
+    }
+    .form-control:focus-visible { outline: none; }
+  </style>
+</head>
+<body>
+
+{% include 'components/navbar.html' %}
+
+<!-- ── PAGE HEADER ── -->
+<header class="page-header">
+  <div class="page-header-bg"></div>
+  <div class="page-header-topo"></div>
+  <div class="page-header-road"></div>
+  <div class="page-header-content">
+    <div class="section-label">Hit the Road</div>
+    <h1 class="section-title">Epic <em>Road Trip</em><br>Planner</h1>
+    <div class="terra-line"></div>
+    <p class="section-sub" style="margin-top:0.8rem;">
+      Set your start and end points, pick your dates, and we'll build the perfect multi-day driving route — with overnight stops, scenic detours, and real pricing.
+    </p>
+  </div>
+</header>
+
+<!-- ── FORM SECTION ── -->
+<section style="padding-top: 2.5rem;">
+  <div class="form-wrapper">
+
+    <!-- FORM CARD -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <div class="form-card-title">Route Details</div>
+        <div class="form-card-subtitle">Max 30 days. Daily driving capped at your chosen limit for a comfortable journey.</div>
+      </div>
+
+      <form id="roadTripForm">
+        <!-- Route row -->
+        <div class="route-row">
+          <div class="form-group" style="animation-delay:0.05s; opacity:0; animation: slideUp 0.5s ease 0.05s both;">
+            <label class="form-label" for="start-point"><span class="required">*</span> Starting Point</label>
+            <input type="text" id="start-point" class="form-control" name="startLocation"
+              placeholder="City, region, or airport" required />
+          </div>
+          <div class="route-arrow">→</div>
+          <div class="form-group" style="animation-delay:0.1s; opacity:0; animation: slideUp 0.5s ease 0.1s both;">
+            <label class="form-label" for="end-point"><span class="required">*</span> Ending Point</label>
+            <input type="text" id="end-point" class="form-control" name="endLocation"
+              placeholder="City, region, or airport" required />
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="start-date"><span class="required">*</span> Start Date</label>
+            <input type="date" id="start-date" class="form-control" name="startDate" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="end-date"><span class="required">*</span> End Date</label>
+            <input type="date" id="end-date" class="form-control" name="endDate" required />
+            <div class="date-range-info" id="dateRangeInfo"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="vehicle">Vehicle Type</label>
+            <select id="vehicle" class="form-control" name="vehicle">
+              <option value="car">🚗 Standard Car</option>
+              <option value="suv">🚙 SUV / 4x4</option>
+              <option value="rv">🚐 RV / Motorhome</option>
+              <option value="motorcycle">🏍️ Motorcycle</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="driving-hours">Max Driving Hours / Day</label>
+            <input type="number" id="driving-hours" class="form-control" name="drivingHours"
+              min="1" max="14" placeholder="e.g. 6" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="budget">Budget Level</label>
+            <select id="budget" class="form-control" name="budget">
+              <option value="budget">🎒 Budget / Backpacker</option>
+              <option value="mid" selected>⭐ Mid-range</option>
+              <option value="luxury">✨ Luxury</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="travelers">Travelers</label>
+            <select id="travelers" class="form-control" name="travelers">
+              <option value="solo">👤 Solo</option>
+              <option value="couple">💑 Couple</option>
+              <option value="friends">👥 Group of Friends</option>
+              <option value="family">👨‍👩‍👧‍👦 Family</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label class="form-label" for="stops">Preferred Experience</label>
+            <select id="stops" class="form-control" name="stops">
+              <option value="scenic">🏞️ Scenic Routes & Nature</option>
+              <option value="landmarks">🏛️ Historical Landmarks</option>
+              <option value="quirky">🎪 Quirky Roadside Attractions</option>
+              <option value="food">🍽️ Local Food & Diners</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-submit-row">
+          <span style="font-size:0.78rem;color:var(--stone);">May take 15–20 seconds for longer trips</span>
+          <button type="submit" class="btn btn-terra btn-lg" id="generateBtn">
+            🚗 Generate Route
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- RESULT SECTION -->
+    <div id="resultContainer" style="display:none;">
+      <div class="result-card">
+        <div class="result-header">
+          <div>
+            <h2 class="section-title" style="font-size:1.6rem;">Your <em>Road Trip</em></h2>
+            <div class="result-meta" id="resultMeta"></div>
+          </div>
+          <button type="button" class="btn btn-ghost" id="resetBtn">← New Route</button>
+        </div>
+        <div class="budget-strip" id="budgetStrip"></div>
+        <div id="resultContent" class="markdown-body"></div>
+        <div id="map"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% include 'components/footer.html' %}
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+<script>
+  const roadTripForm    = document.getElementById('roadTripForm');
+  const generateBtn     = document.getElementById('generateBtn');
+  const resultContainer = document.getElementById('resultContainer');
+  const resetBtn        = document.getElementById('resetBtn');
+  const startDateInput  = document.getElementById('start-date');
+  const endDateInput    = document.getElementById('end-date');
+  const dateInfo        = document.getElementById('dateRangeInfo');
+
+  function daysBetween(a, b) {
+    return Math.round((new Date(b) - new Date(a)) / 86400000);
+  }
+
+  function updateDateInfo() {
+    if (!startDateInput.value || !endDateInput.value) { dateInfo.textContent = ''; return; }
+    const d = daysBetween(startDateInput.value, endDateInput.value);
+    if (d <= 0) {
+      dateInfo.textContent = 'End date must be after start date.';
+      dateInfo.className = 'date-range-info warn';
+    } else if (d > 30) {
+      dateInfo.textContent = 'Maximum 30 days — end date will be capped.';
+      dateInfo.className = 'date-range-info warn';
+    } else {
+      dateInfo.textContent = `${d} day${d !== 1 ? 's' : ''} selected`;
+      dateInfo.className = 'date-range-info ok';
+    }
+  }
+
+  startDateInput.addEventListener('change', () => {
+    if (startDateInput.value) {
+      const maxEnd = new Date(startDateInput.value);
+      maxEnd.setDate(maxEnd.getDate() + 30);
+      endDateInput.min = startDateInput.value;
+      endDateInput.max = maxEnd.toISOString().split('T')[0];
+    }
+    updateDateInfo();
+  });
+  endDateInput.addEventListener('change', updateDateInfo);
+
+  roadTripForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    if (startDateInput.value && endDateInput.value) {
+      const d = daysBetween(startDateInput.value, endDateInput.value);
+      if (d <= 0) { showToast('End date must be after start date.', 'error'); return; }
+    }
+
+    const originalHTML = generateBtn.innerHTML;
+    generateBtn.innerHTML = '<span class="spinner"></span> Generating…';
+    generateBtn.disabled = true;
+
+    const data = Object.fromEntries(new FormData(this).entries());
+
+    try {
+      const response = await fetch('/road-trip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+
+      if (response.ok && result.data) {
+        const { markdown, budget } = result.data;
+
+        document.getElementById('resultContent').innerHTML = marked.parse(markdown || '');
+        document.getElementById('map').innerHTML = result.map || '';
+
+        // Budget strip
+        const b = budget || {};
+        const total = b.trip_total_usd || {};
+        const perDay = b.per_day_usd || {};
+        document.getElementById('budgetStrip').innerHTML = [
+          { val: `$${total.grand_total || '—'}`, label: 'Grand Total' },
+          { val: `$${perDay.total || '—'}/day`, label: 'Per Day' },
+          { val: `${b.total_distance_miles || '—'} mi`, label: 'Distance' },
+          { val: `$${b.est_fuel_cost_usd || '—'}`, label: 'Est. Fuel' },
+          { val: `$${total.accommodation || '—'}`, label: 'Accommodation' },
+          { val: `$${total.food || '—'}`, label: 'Food' },
+        ].map(c => `<div class="budget-card"><div class="budget-card-val">${c.val}</div><div class="budget-card-label">${c.label}</div></div>`).join('');
+
+        // Meta
+        const days = result.meta?.plannedDays || '—';
+        document.getElementById('resultMeta').innerHTML =
+          `<span class="result-tag">🚗 ${data.startLocation} → ${data.endLocation}</span>
+           <span class="result-tag">📅 ${days} days</span>
+           <span class="result-tag">${data.vehicle}</span>`;
+
+        resultContainer.style.display = 'block';
+        resultContainer.style.animation = 'fadeUp 0.5s ease both';
+        setTimeout(() => resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+      } else {
+        showToast(result.error || 'Something went wrong. Please try again.', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Connection error. Please try again.', 'error');
+    } finally {
+      generateBtn.innerHTML = originalHTML;
+      generateBtn.disabled = false;
+    }
+  });
+
+  resetBtn?.addEventListener('click', () => {
+    roadTripForm.reset();
+    resultContainer.style.display = 'none';
+    document.getElementById('resultContent').innerHTML = '';
+    document.getElementById('map').innerHTML = '';
+    document.getElementById('budgetStrip').innerHTML = '';
+    dateInfo.textContent = '';
+    roadTripForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+</script>
+</body>
+</html>
