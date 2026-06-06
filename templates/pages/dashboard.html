@@ -682,34 +682,26 @@
   })();
 
   // ─── STATE ──────────────────────────────────────────────────
-  let allTrips = [];
+  let allTrips = {{ trips_json | safe }};
   let currentFilter = 'all';
   let searchQuery = '';
   let pendingDeleteId = null;
 
-  // ─── FETCH TRIPS ────────────────────────────────────────────
-  async function loadDashboard() {
-    try {
-      const res = await fetch('/api/dashboard');
-      const data = await res.json();
+  // ─── BOOT DATA (injected server-side, no fetch needed) ──────
+  function loadDashboard() {
+    const user = {{ user | tojson | safe }};
 
-      if (data.user) {
-        document.getElementById('greetName').textContent = data.user.firstname || data.user.email || 'Traveler';
-      }
-
-      allTrips = data.trips || [];
-      renderStats(allTrips);
-      renderTrips();
-
-      const sub = document.getElementById('greetSub');
-      sub.textContent = allTrips.length === 0
-        ? "You have no saved trips yet. Ready to start planning?"
-        : `You have ${allTrips.length} saved trip${allTrips.length > 1 ? 's' : ''}. Keep exploring.`;
-
-    } catch (err) {
-      console.error('Dashboard load error:', err);
-      renderEmpty('Failed to load trips. Please refresh.');
+    if (user) {
+      document.getElementById('greetName').textContent = user.firstname || user.email || 'Traveler';
     }
+
+    renderStats(allTrips);
+    renderTrips();
+
+    const sub = document.getElementById('greetSub');
+    sub.textContent = allTrips.length === 0
+      ? "You have no saved trips yet. Ready to start planning?"
+      : `You have ${allTrips.length} saved trip${allTrips.length > 1 ? 's' : ''}. Keep exploring.`;
   }
 
   // ─── STATS ──────────────────────────────────────────────────

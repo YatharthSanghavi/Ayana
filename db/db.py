@@ -18,7 +18,6 @@ def get_user_supabase() -> Client:
     refresh_token = session.get("refresh_token")
     
     if access_token and refresh_token:
-        # Injects the user's JWT so RLS policies pass
         client.auth.set_session(access_token, refresh_token)
         
     return client

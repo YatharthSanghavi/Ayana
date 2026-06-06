@@ -43,8 +43,7 @@ def login():
                 session["refresh_token"] = response.session.refresh_token
                 return redirect(url_for("root"))
             
-            print(f"Login successful! Welcome back, {user.email}")
-            return redirect(url_for("root"))
+            return redirect(url_for("dashboard"))
 
         except Exception as e:
             return render_template("auth/login.html", error="Invalid email or password.")
@@ -89,9 +88,52 @@ def logout():
 @app.get("/dashboard")
 @login_required
 def dashboard():
-    user_id=session["user_id"]
+    import json
+    user_id = session["user_id"]
 
-    return render_template("pages/dashboard.html")
+    user_db = get_user_supabase()
+
+    profile = (
+        user_db.table("profiles")
+        .select("*")
+        .eq("id", user_id)
+        .single()
+        .execute()
+    )
+
+    plan_trips = (
+        user_db.table("plan_trips")
+        .select("*")
+        .eq("user_id", user_id)
+        .execute()
+    )
+
+    road_trips = (
+        user_db.table("road_trips")
+        .select("*")
+        .eq("user_id", user_id)
+        .execute()
+    )
+    
+    trips = []
+
+    for trip in plan_trips.data:
+        trips.append({
+            **trip,
+            "trip_type": trip.get("trip_type", "itinerary")
+        })
+    for trip in road_trips.data:
+        trips.append({
+            **trip,
+            "trip_type": "road_trip",
+            "destination": f"{trip['start_location']} → {trip['end_location']}"
+        })
+
+    return render_template(
+        "pages/dashboard.html",
+        user=profile.data,
+        trips_json=json.dumps(trips)
+    )
 
 @app.get("/plan-trip")
 @login_required
@@ -112,18 +154,18 @@ def plan_trip():
         map_html = build_plan_trip_map(locations_list)
 
         user_db = get_user_supabase()
-        
-        response=supabase.table("plan_trips").insert({
-            "user_id":session["user_id"],
+
+        response = user_db.table("plan_trips").insert({
+            "user_id": session["user_id"],
             "destination": details.get('destination'),
-            "days":details.get('days'),
-            "budget":details.get('budget'),
-            "travelers":details.get('travelers'),
-            "trip_type":details.get('tripType'),
-            "interests":details.get('interests'),
-            "markdown":generated_plan.get('markdown'),
-            "budget_data":generated_plan.get('budget'),
-            "locations":generated_plan.get('locations')
+            "days": details.get('days'),
+            "budget": details.get('budget'),
+            "travelers": details.get('travelers'),
+            "trip_type": details.get('tripType'),
+            "interests": details.get('interests'),
+            "markdown": generated_plan.get('markdown'),
+            "budget_data": generated_plan.get('budget'),
+            "locations": generated_plan.get('locations'),
         }).execute()
 
         return jsonify({"data": generated_plan,"map":map_html})
@@ -144,34 +186,48 @@ def road_trip():
         return jsonify({"error": "No JSON body provided"}), 400
 
     try:
-      requested_days, planned_days = compute_road_trip_days(
-        details.get("startDate", ""),
-        details.get("endDate", ""),
-        max_days=30,
-      )
-      details["requestedDays"] = requested_days
-      details["plannedDays"] = planned_days
+        requested_days, planned_days = compute_road_trip_days(
+            details.get("startDate", ""),
+            details.get("endDate", ""),
+            max_days=30,
+        )
+        details["requestedDays"] = requested_days
+        details["plannedDays"] = planned_days
 
-      prompt = build_road_trip_prompt(details)
-      generated_plan = call_gemini(prompt)
-      locations_list = generated_plan.get("locations", [])
-      map_html = build_plan_trip_map(locations_list)
-      
-      # Enforce day limit on the markdown output
-      if "markdown" in generated_plan:
-        generated_plan["markdown"] = enforce_day_limit(generated_plan["markdown"], planned_days)
-      
-      return jsonify(
-        {
-          "data": generated_plan,
-          "meta": {
-            "requestedDays": requested_days,
-            "plannedDays": planned_days,
-            "maxDays": 30,
-          },
-          "map":map_html,
-        }
-      )
+        prompt = build_road_trip_prompt(details)
+        generated_plan = call_gemini(prompt)
+        locations_list = generated_plan.get("locations", [])
+        map_html = build_plan_trip_map(locations_list)
+
+        if "markdown" in generated_plan:
+            generated_plan["markdown"] = enforce_day_limit(generated_plan["markdown"], planned_days)
+    
+        user_db = get_user_supabase()
+
+        response=user_db.table("road_trips").insert({
+            "user_id": session["user_id"],
+            "start_location": details.get("startLocation"),
+            "end_location": details.get("endLocation"),
+            "start_date": details.get("startDate"),
+            "end_date": details.get("endDate"),
+            "vehicle": details.get("vehicle"),
+            "travelers": details.get("travelers"),
+            "budget": details.get("budget"),
+            "days": planned_days,
+            "markdown": generated_plan.get("markdown"),
+            "budget_data": generated_plan.get("budget"),
+            "locations": generated_plan.get("locations"),
+        }).execute()
+
+        return jsonify({
+            "data": generated_plan,
+            "meta": {
+                "requestedDays": requested_days,
+                "plannedDays": planned_days,
+                "maxDays": 30,
+            },
+            "map": map_html,
+        })
     except Exception as e:
         return jsonify({"error": f"Failed to generate road trip plan: {str(e)}"}), 500
 
