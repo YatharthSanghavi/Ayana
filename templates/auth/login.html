@@ -235,7 +235,7 @@
   const pwInput = document.getElementById('password');
   const pwToggle = document.getElementById('pwToggle');
   pwToggle?.addEventListener('click', () => {
-    const shaow = pwInput.type === 'password';
+    const show = pwInput.type === 'password';
     pwInput.type = show ? 'text' : 'password';
     pwToggle.textContent = show ? '🙈' : '👁';
   });
