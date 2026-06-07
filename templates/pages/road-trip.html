@@ -218,16 +218,28 @@
       <form id="roadTripForm">
         <!-- Route row -->
         <div class="route-row">
-          <div class="form-group" style="animation-delay:0.05s; opacity:0; animation: slideUp 0.5s ease 0.05s both;">
+          <div class="form-group" style="position:relative; animation-delay:0.05s; opacity:0; animation: slideUp 0.5s ease 0.05s both;">
             <label class="form-label" for="start-point"><span class="required">*</span> Starting Point</label>
             <input type="text" id="start-point" class="form-control" name="startLocation"
-              placeholder="City, region, or airport" required />
+              placeholder="City, region, or airport" required autocomplete="off" />
+            <ul id="startDropdown" style="
+              display:none; position:absolute; z-index:999; width:100%;
+              background:#1a1410; border:1px solid rgba(196,98,58,0.3);
+              border-radius:8px; margin-top:4px; padding:0; list-style:none;
+              box-shadow:0 8px 24px rgba(0,0,0,0.5); max-height:220px; overflow-y:auto;
+            "></ul>
           </div>
           <div class="route-arrow">→</div>
-          <div class="form-group" style="animation-delay:0.1s; opacity:0; animation: slideUp 0.5s ease 0.1s both;">
+          <div class="form-group" style="position:relative; animation-delay:0.1s; opacity:0; animation: slideUp 0.5s ease 0.1s both;">
             <label class="form-label" for="end-point"><span class="required">*</span> Ending Point</label>
             <input type="text" id="end-point" class="form-control" name="endLocation"
-              placeholder="City, region, or airport" required />
+              placeholder="City, region, or airport" required autocomplete="off" />
+            <ul id="endDropdown" style="
+              display:none; position:absolute; z-index:999; width:100%;
+              background:#1a1410; border:1px solid rgba(196,98,58,0.3);
+              border-radius:8px; margin-top:4px; padding:0; list-style:none;
+              box-shadow:0 8px 24px rgba(0,0,0,0.5); max-height:220px; overflow-y:auto;
+            "></ul>
           </div>
         </div>
 
@@ -360,6 +372,10 @@
       const d = daysBetween(startDateInput.value, endDateInput.value);
       if (d <= 0) { showToast('End date must be after start date.', 'error'); return; }
     }
+    if (_cityCountry.start && _cityCountry.end && _cityCountry.start !== _cityCountry.end) {
+      showToast('Start and end cities must be in the same country for a road trip.', 'error');
+      return;
+    }
 
     const originalHTML = generateBtn.innerHTML;
     generateBtn.innerHTML = '<span class="spinner"></span> Generating…';
@@ -425,6 +441,55 @@
     dateInfo.textContent = '';
     roadTripForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
+
+  const _cityCountry = { start: null, end: null }; // tracks selected countries
+
+  function setupCityInput(inputId, dropdownId, key) {
+    const input = document.getElementById(inputId);
+    const list  = document.getElementById(dropdownId);
+    let timer;
+
+    input.addEventListener('input', () => {
+      clearTimeout(timer);
+      _cityCountry[key] = null; // reset on manual edit
+      const q = input.value.trim();
+      if (q.length < 2) { list.style.display = 'none'; return; }
+      timer = setTimeout(() => fetchCities(q, list, input, key), 300);
+    });
+
+    document.addEventListener('click', e => {
+      if (!input.contains(e.target) && !list.contains(e.target))
+        list.style.display = 'none';
+    });
+  }
+
+  async function fetchCities(query, listEl, inputEl, key) {
+    const url = `https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/geonames-all-cities-with-a-population-1000/records?select=name,cou_name_en&where=search(name,"${encodeURIComponent(query)}")&limit=8&order_by=population%20desc`;
+    try {
+      const res  = await fetch(url);
+      const data = await res.json();
+      const results = data.results || [];
+      if (!results.length) { listEl.style.display = 'none'; return; }
+      listEl.innerHTML = results.map(r =>
+        `<li data-val="${r.name}, ${r.cou_name_en}" data-country="${r.cou_name_en}" style="
+          padding:0.55rem 1rem; cursor:pointer; font-size:0.875rem;
+          color:#d4c4b0; border-bottom:1px solid rgba(196,98,58,0.1);
+        " onmouseover="this.style.background='rgba(196,98,58,0.12)'"
+          onmouseout="this.style.background=''">${r.name} <span style="color:#7a6e64;font-size:0.78rem;">— ${r.cou_name_en}</span></li>`
+      ).join('');
+      listEl.style.display = 'block';
+      listEl.querySelectorAll('li').forEach(li => {
+        li.addEventListener('click', () => {
+          inputEl.value = li.dataset.val;
+          _cityCountry[key] = li.dataset.country;
+          listEl.style.display = 'none';
+        });
+      });
+    } catch { listEl.style.display = 'none'; }
+  }
+
+  setupCityInput('start-point', 'startDropdown', 'start');
+  setupCityInput('end-point',   'endDropdown',   'end');
 </script>
 </body>
 </html>

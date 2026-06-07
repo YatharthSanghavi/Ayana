@@ -686,6 +686,7 @@
   let currentFilter = 'all';
   let searchQuery = '';
   let pendingDeleteId = null;
+  let pendingDeleteType = null;
 
   // ─── BOOT DATA (injected server-side, no fetch needed) ──────
   function loadDashboard() {
@@ -781,7 +782,10 @@
       btn.addEventListener('click', () => openModal(btn.dataset.view));
     });
     grid.querySelectorAll('[data-delete]').forEach(btn => {
-      btn.addEventListener('click', () => confirmDelete(btn.dataset.delete));
+      btn.addEventListener('click', () => {
+        const trip = allTrips.find(t => t.id === btn.dataset.delete);
+        confirmDelete(btn.dataset.delete, trip?.trip_type);
+      });
     });
     grid.querySelectorAll('[data-copy]').forEach(btn => {
       btn.addEventListener('click', () => copyMarkdown(btn.dataset.copy));
@@ -860,8 +864,9 @@
   }
 
   // ─── DELETE ─────────────────────────────────────────────────
-  function confirmDelete(id) {
+  function confirmDelete(id, type) {
     pendingDeleteId = id;
+    pendingDeleteType = type;
     document.getElementById('deleteOverlay').classList.add('open');
   }
 
@@ -873,7 +878,11 @@
   document.getElementById('deleteConfirmBtn').addEventListener('click', async () => {
     if (!pendingDeleteId) return;
     try {
-      const res = await fetch(`/api/trips/${pendingDeleteId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/trips/${pendingDeleteId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tripType: pendingDeleteType })
+      });
       if (res.ok) {
         allTrips = allTrips.filter(t => t.id !== pendingDeleteId);
         renderTrips();
@@ -886,6 +895,7 @@
       showToast('Connection error.', 'error');
     }
     pendingDeleteId = null;
+    pendingDeleteType = null;
     document.getElementById('deleteOverlay').classList.remove('open');
   });
 

@@ -234,22 +234,23 @@ def road_trip():
 @app.delete("/api/trips/<trip_id>")
 @login_required
 def delete_trip(trip_id):
-    trip_id = request.view_args["trip_id"]
-    user_id = session["user_id"]
+    try:
+        user_id = session["user_id"]
+        body = request.get_json(silent=True) or {}
+        trip_type = body.get("tripType")
 
-    user_db = get_user_supabase()
+        user_db = get_user_supabase()
+        table = "road_trips" if trip_type == "road_trip" else "plan_trips"
 
-    # Try deleting from plan_trips
-    response = user_db.table("plan_trips").delete().eq("id", trip_id).eq("user_id", user_id).execute()
-    if response.count > 0:
-        return jsonify({"message": "Trip deleted successfully."}), 200
+        response = user_db.table(table).delete(count="exact").eq("id", trip_id).eq("user_id", user_id).execute()
 
-    # If not found in plan_trips, try road_trips
-    response = user_db.table("road_trips").delete().eq("id", trip_id).eq("user_id", user_id).execute()
-    if response.count > 0:
-        return jsonify({"message": "Trip deleted successfully."}), 200
+        if response.count and response.count > 0:
+            return jsonify({"message": "Trip deleted successfully."}), 200
 
-    return jsonify({"error": "Trip not found."}), 404
+        return jsonify({"error": "Trip not found."}), 404
+    except Exception as e:
+        print(f"Error deleting trip: {str(e)}")
+        return jsonify({"error": f"Failed to delete trip: {str(e)}"}), 500
 
 if __name__ == "__main__":
     app.run()
