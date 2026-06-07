@@ -231,5 +231,25 @@ def road_trip():
     except Exception as e:
         return jsonify({"error": f"Failed to generate road trip plan: {str(e)}"}), 500
 
+@app.delete("/api/trips/<trip_id>")
+@login_required
+def delete_trip(trip_id):
+    trip_id = request.view_args["trip_id"]
+    user_id = session["user_id"]
+
+    user_db = get_user_supabase()
+
+    # Try deleting from plan_trips
+    response = user_db.table("plan_trips").delete().eq("id", trip_id).eq("user_id", user_id).execute()
+    if response.count > 0:
+        return jsonify({"message": "Trip deleted successfully."}), 200
+
+    # If not found in plan_trips, try road_trips
+    response = user_db.table("road_trips").delete().eq("id", trip_id).eq("user_id", user_id).execute()
+    if response.count > 0:
+        return jsonify({"message": "Trip deleted successfully."}), 200
+
+    return jsonify({"error": "Trip not found."}), 404
+
 if __name__ == "__main__":
     app.run()
