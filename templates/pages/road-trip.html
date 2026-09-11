@@ -3,155 +3,534 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Road Trip Planner — Ayana</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <title>Epic Road Trip Planner — Ayana</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.0" />
   <style>
     /* ─── PAGE HEADER ─── */
     .page-header {
-      padding: clamp(7rem,16vw,11rem) clamp(1.5rem,5%,3rem) 3rem;
+      padding: clamp(6.5rem,14vw,9.5rem) clamp(1.5rem,5%,3rem) 2.5rem;
       position: relative;
       overflow: hidden;
+      text-align: center;
     }
     .page-header-bg {
       position: absolute; inset: 0;
       background:
-        radial-gradient(ellipse 55% 65% at 85% 50%, rgba(196,98,58,0.08), transparent),
-        linear-gradient(160deg, #0e0c0a 0%, #181310 100%);
+        radial-gradient(ellipse 70% 60% at 50% 40%, rgba(196,98,58,0.14), transparent 75%),
+        linear-gradient(160deg, #0e0c0a 0%, #16120e 100%);
     }
     .page-header-topo {
       position: absolute; inset: 0;
-      background-image: repeating-radial-gradient(ellipse 65% 50% at 20% 50%, transparent 0px, transparent 30px, rgba(196,98,58,0.025) 30px, rgba(196,98,58,0.025) 31px);
+      background-image: repeating-radial-gradient(ellipse 70% 55% at 50% 50%, transparent 0px, transparent 30px, rgba(196,98,58,0.025) 30px, rgba(196,98,58,0.025) 31px);
       pointer-events: none;
     }
-    .page-header-road {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, transparent 0%, rgba(196,98,58,0.4) 30%, rgba(196,98,58,0.4) 70%, transparent 100%);
-    }
-    .page-header-content { position: relative; z-index: 1; max-width: 600px; }
+    .page-header-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
 
     /* ─── FORM WRAPPER ─── */
     .form-wrapper {
-      max-width: 860px;
+      max-width: 920px;
       margin: 0 auto;
-      padding: 0 clamp(1.5rem,5%,3rem) 6rem;
+      padding: 0 clamp(1.2rem,4%,2.5rem) 6rem;
+      position: relative;
     }
 
     /* ─── FORM CARD ─── */
     .form-card {
-      padding: clamp(2rem,5vw,3rem);
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(196,98,58,0.18);
-      background: rgba(20,16,12,0.7);
-      backdrop-filter: blur(16px);
-      box-shadow: 0 24px 72px rgba(0,0,0,0.5);
+      padding: clamp(1.8rem,4vw,2.8rem);
+      border-radius: 24px;
+      border: 1px solid rgba(196,98,58,0.22);
+      background: linear-gradient(175deg, rgba(26,20,15,0.92) 0%, rgba(16,13,10,0.96) 100%);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.65), 0 0 1px 1px rgba(196,98,58,0.12);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      position: relative;
     }
-    .form-card-header {
-      margin-bottom: 2rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid rgba(196,98,58,0.12);
-    }
-    .form-card-title { font-family: var(--ff-display); font-size: 1.35rem; color: var(--cream); font-weight: 600; }
-    .form-card-subtitle { font-size: 0.84rem; color: var(--stone); margin-top: 0.3rem; }
 
-    /* Route input row */
-    .route-row {
+    /* Sectional blocks */
+    .form-block {
+      margin-bottom: 2rem;
+      padding-bottom: 1.8rem;
+      border-bottom: 1px solid rgba(196,98,58,0.1);
+      position: relative;
+    }
+    .form-block:last-of-type {
+      margin-bottom: 1.5rem;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .form-block-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+    .block-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(196,98,58,0.15);
+      border: 1px solid rgba(196,98,58,0.3);
+      color: var(--terra-lt);
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .block-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--cream);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-family: var(--ff-ui);
+    }
+    .block-subtitle {
+      font-size: 0.8rem;
+      color: var(--stone);
+      margin-left: auto;
+    }
+
+    /* ─── ROUTE BUILDER HERO ─── */
+    .route-builder-section {
+      position: relative;
+      z-index: 1000;
+    }
+    .route-inputs-grid {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
-      gap: 1rem;
-      align-items: end;
-      margin-bottom: 1.2rem;
+      gap: 0.8rem;
+      align-items: center;
+    }
+    @media (max-width: 680px) {
+      .route-inputs-grid { grid-template-columns: 1fr; }
+    }
+
+    .route-input-group {
       position: relative;
+    }
+    .route-input-group:focus-within {
       z-index: 50;
     }
-    .route-row .autocomplete-group {
-      position: relative;
-      z-index: 20;
-    }
-    .route-row .autocomplete-group:first-child {
-      z-index: 21;
-    }
-    .route-row .autocomplete-group:focus-within {
-      z-index: 30;
-    }
-    .route-arrow {
-      padding-bottom: 0.6rem;
-      text-align: center;
-      color: var(--terra);
-      font-size: 1.2rem;
-      font-weight: 700;
-      flex-shrink: 0;
-      opacity: 0.7;
-    }
-    @media (max-width: 600px) {
-      .route-row { grid-template-columns: 1fr; }
-      .route-arrow { display: none; }
-    }
-
-    /* ─── FORM GRID ─── */
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1.2rem;
-      margin-bottom: 1.5rem;
-      position: relative;
-      z-index: 1;
-    }
-    @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
-    .full-width { grid-column: 1 / -1; }
-
-    .form-group {
-      opacity: 0;
-      animation: slideUp 0.5s ease both;
-      position: relative;
-      z-index: 1;
-    }
-    .form-group:nth-child(1) { animation-delay: 0.05s; }
-    .form-group:nth-child(2) { animation-delay: 0.1s; }
-    .form-group:nth-child(3) { animation-delay: 0.15s; }
-    .form-group:nth-child(4) { animation-delay: 0.2s; }
-    .form-group:nth-child(5) { animation-delay: 0.25s; }
-    .form-group:nth-child(6) { animation-delay: 0.3s; }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: none; }
-    }
-
-    /* Date range info */
-    .date-range-info {
-      font-size: 0.75rem;
-      color: var(--stone);
-      margin-top: 0.4rem;
-      min-height: 1em;
-    }
-    .date-range-info.warn { color: #e07050; }
-    .date-range-info.ok { color: var(--terra); }
-
-    /* ─── SUBMIT ROW ─── */
-    .form-submit-row {
+    .route-input-box {
       display: flex;
-      justify-content: flex-end;
       align-items: center;
-      gap: 1rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid rgba(196,98,58,0.1);
+      background: #110e0b;
+      border: 1.5px solid rgba(196,98,58,0.28);
+      border-radius: 14px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+    }
+    .route-input-box:focus-within {
+      border-color: var(--terra);
+      box-shadow: 0 0 0 4px rgba(196,98,58,0.16), 0 8px 25px rgba(0,0,0,0.4);
+    }
+    .route-icon {
+      padding-left: 1.1rem;
+      font-size: 1.15rem;
+      color: var(--terra);
+      flex-shrink: 0;
+    }
+    .route-text-input {
+      width: 100%;
+      padding: 0.95rem 1rem;
+      background: transparent;
+      border: none;
+      color: var(--cream);
+      font-size: 1rem;
+      font-family: var(--ff-ui);
+      outline: none;
+    }
+    .route-text-input::placeholder {
+      color: #6d6258;
+      font-size: 0.92rem;
+    }
+
+    .route-swap-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(196,98,58,0.12);
+      border: 1px solid rgba(196,98,58,0.35);
+      color: var(--terra-lt);
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      margin: 0 auto;
+    }
+    .route-swap-btn:hover {
+      background: var(--terra);
+      color: #ffffff;
+      transform: rotate(180deg);
+    }
+
+    /* Popular Route Chips */
+    .route-chips-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.9rem;
       flex-wrap: wrap;
     }
-    .btn-terra:disabled { opacity: 0.55; cursor: not-allowed; }
+    .route-chip-btn {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(196,98,58,0.18);
+      color: var(--cream-3);
+      font-size: 0.78rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .route-chip-btn:hover {
+      background: rgba(196,98,58,0.16);
+      border-color: rgba(196,98,58,0.45);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
 
-    /* ─── RESULT ─── */
+    /* ─── DROPDOWN (GUARANTEED SOLID & TOP LAYER) ─── */
+    .autocomplete-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      width: 100%;
+      z-index: 999999;
+      background: #171310 !important;
+      background-color: #171310 !important;
+      border: 1.5px solid rgba(196,98,58,0.45);
+      border-radius: 14px;
+      padding: 6px;
+      margin: 0;
+      list-style: none;
+      box-shadow: 0 25px 70px rgba(0,0,0,0.98), 0 0 0 1px rgba(196,98,58,0.25);
+      max-height: 250px;
+      overflow-y: auto;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    .autocomplete-dropdown li {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      color: #ede3d5;
+      background: #171310;
+      border-bottom: 1px solid rgba(196,98,58,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.15s ease;
+      margin-bottom: 2px;
+    }
+    .autocomplete-dropdown li:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    .autocomplete-dropdown li:hover {
+      background: rgba(196,98,58,0.22) !important;
+      color: #ffffff !important;
+      padding-left: 1.15rem;
+    }
+    .autocomplete-dropdown li .country-pill {
+      font-size: 0.75rem;
+      color: #b8a896;
+      background: rgba(196,98,58,0.12);
+      border: 1px solid rgba(196,98,58,0.25);
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+    .autocomplete-dropdown::-webkit-scrollbar { width: 6px; }
+    .autocomplete-dropdown::-webkit-scrollbar-track { background: #171310; border-radius: 8px; }
+    .autocomplete-dropdown::-webkit-scrollbar-thumb { background: rgba(196,98,58,0.35); border-radius: 8px; }
+
+    /* ─── DATES & PACE GRID ─── */
+    .dates-pace-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+    }
+    @media (max-width: 650px) {
+      .dates-pace-grid { grid-template-columns: 1fr; }
+    }
+    .date-card {
+      background: #120e0b;
+      border: 1px solid rgba(196,98,58,0.2);
+      border-radius: 14px;
+      padding: 0.9rem 1.1rem;
+    }
+    .date-input-field {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--cream);
+      font-size: 0.95rem;
+      outline: none;
+      font-family: var(--ff-ui);
+      margin-top: 0.4rem;
+    }
+    .date-range-info {
+      font-size: 0.78rem;
+      margin-top: 0.5rem;
+      min-height: 1.2em;
+    }
+    .date-range-info.warn { color: #e07050; }
+    .date-range-info.ok { color: var(--terra-lt); font-weight: 600; }
+
+    /* ─── VEHICLE SELECTOR CARDS ─── */
+    .vehicle-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.8rem;
+    }
+    @media (max-width: 760px) {
+      .vehicle-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .vehicle-label {
+      cursor: pointer;
+      position: relative;
+    }
+    .vehicle-radio {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .vehicle-box {
+      background: #120e0b;
+      border: 1.5px solid rgba(196,98,58,0.18);
+      border-radius: 14px;
+      padding: 1rem 0.9rem;
+      text-align: center;
+      transition: all 0.2s ease;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .vehicle-label:hover .vehicle-box {
+      border-color: rgba(196,98,58,0.4);
+      background: rgba(196,98,58,0.05);
+      transform: translateY(-2px);
+    }
+    .vehicle-radio:checked + .vehicle-box {
+      border-color: var(--terra);
+      background: rgba(196,98,58,0.14);
+      box-shadow: 0 0 20px rgba(196,98,58,0.22);
+    }
+    .vehicle-icon { font-size: 1.6rem; margin-bottom: 0.35rem; }
+    .vehicle-name { font-size: 0.9rem; font-weight: 600; color: var(--cream); }
+    .vehicle-sub { font-size: 0.72rem; color: var(--stone); margin-top: 0.2rem; }
+
+    /* ─── DRIVING HOURS BUTTONS ─── */
+    .hours-buttons-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.8rem;
+    }
+    @media (max-width: 600px) {
+      .hours-buttons-row { grid-template-columns: 1fr; }
+    }
+    .hour-option-label {
+      cursor: pointer;
+      position: relative;
+    }
+    .hour-radio {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .hour-box {
+      background: #120e0b;
+      border: 1px solid rgba(196,98,58,0.18);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+    .hour-option-label:hover .hour-box {
+      border-color: rgba(196,98,58,0.4);
+      background: rgba(196,98,58,0.06);
+    }
+    .hour-radio:checked + .hour-box {
+      border-color: var(--terra);
+      background: rgba(196,98,58,0.16);
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(196,98,58,0.2);
+    }
+    .hour-title { font-size: 0.92rem; font-weight: 600; color: var(--cream); }
+    .hour-desc { font-size: 0.72rem; color: var(--stone); margin-top: 0.2rem; }
+
+    /* ─── PREFERRED EXPERIENCE / STOPS CHIPS ─── */
+    .stops-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.7rem;
+    }
+
+    /* ─── BUDGET LEVEL CARDS ─── */
+    .budget-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.85rem;
+    }
+    @media (max-width: 650px) {
+      .budget-cards-grid { grid-template-columns: 1fr; }
+    }
+    .choice-card-label {
+      cursor: pointer;
+      position: relative;
+    }
+    .choice-radio {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .choice-card-body {
+      background: #120e0b;
+      border: 1.5px solid rgba(196,98,58,0.18);
+      border-radius: 14px;
+      padding: 1rem 0.9rem;
+      transition: all 0.2s ease;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .choice-card-label:hover .choice-card-body {
+      border-color: rgba(196,98,58,0.4);
+      background: rgba(196,98,58,0.04);
+      transform: translateY(-2px);
+    }
+    .choice-radio:checked + .choice-card-body {
+      border-color: var(--terra);
+      background: rgba(196,98,58,0.12);
+      box-shadow: 0 0 25px rgba(196,98,58,0.22);
+    }
+    .choice-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.3rem;
+    }
+    .choice-icon { font-size: 1.3rem; }
+    .choice-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--terra-lt);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .choice-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--cream);
+      margin-bottom: 0.25rem;
+    }
+    .choice-desc {
+      font-size: 0.75rem;
+      color: var(--stone);
+      line-height: 1.4;
+      margin-top: auto;
+    }
+
+    /* ─── CHIP BUTTONS ─── */
+    .chip-label {
+      cursor: pointer;
+      position: relative;
+    }
+    .chip-radio {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .chip-body {
+      background: #120e0b;
+      border: 1px solid rgba(196,98,58,0.18);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 0.88rem;
+      color: var(--cream-2);
+      transition: all 0.15s ease;
+    }
+    .chip-label:hover .chip-body {
+      border-color: rgba(196,98,58,0.4);
+      background: rgba(196,98,58,0.06);
+    }
+    .chip-radio:checked + .chip-body {
+      border-color: var(--terra);
+      background: rgba(196,98,58,0.16);
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 0 16px rgba(196,98,58,0.2);
+    }
+
+    /* ─── SUBMIT ACTION ─── */
+    .submit-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.2rem;
+      padding-top: 1.8rem;
+      border-top: 1px solid rgba(196,98,58,0.12);
+      flex-wrap: wrap;
+    }
+    .submit-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--stone);
+      font-size: 0.82rem;
+    }
+    .btn-generate {
+      background: linear-gradient(135deg, #d4683e 0%, #b84f27 100%);
+      color: #ffffff;
+      border: none;
+      padding: 0.95rem 2.2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      box-shadow: 0 8px 30px rgba(196,98,58,0.35);
+      transition: all 0.2s ease;
+    }
+    .btn-generate:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 36px rgba(196,98,58,0.45);
+      background: linear-gradient(135deg, #de7449 0%, #c4552b 100%);
+    }
+    .btn-generate:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ─── RESULT SECTION ─── */
     #resultContainer {
-      max-width: 860px;
-      margin: 2rem auto 0;
+      max-width: 920px;
+      margin: 2.5rem auto 0;
+      opacity: 0;
     }
     .result-card {
       padding: clamp(2rem,5vw,3rem);
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(196,98,58,0.2);
-      background: rgba(20,16,12,0.7);
-      backdrop-filter: blur(16px);
-      box-shadow: 0 24px 72px rgba(0,0,0,0.5);
+      border-radius: 24px;
+      border: 1px solid rgba(196,98,58,0.22);
+      background: rgba(20,16,12,0.85);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
     }
     .result-header {
       display: flex;
@@ -167,38 +546,40 @@
     .result-tag {
       display: inline-flex;
       align-items: center;
-      font-size: 0.7rem;
+      gap: 0.3rem;
+      font-size: 0.72rem;
       font-weight: 600;
       letter-spacing: 0.07em;
       text-transform: uppercase;
       color: var(--terra);
       background: rgba(196,98,58,0.1);
       border: 1px solid rgba(196,98,58,0.2);
-      padding: 0.22rem 0.6rem;
-      border-radius: 4px;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
     }
+
     .budget-strip {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
       gap: 0.8rem;
       margin: 1.5rem 0 2rem;
     }
     .budget-card {
-      padding: 1rem;
+      padding: 1.1rem 0.8rem;
       background: rgba(196,98,58,0.06);
-      border: 1px solid rgba(196,98,58,0.14);
-      border-radius: var(--radius-sm);
+      border: 1px solid rgba(196,98,58,0.15);
+      border-radius: 10px;
       text-align: center;
     }
-    .budget-card-val { font-family: var(--ff-display); font-size: 1.2rem; color: var(--terra-lt); font-weight: 700; }
-    .budget-card-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone); margin-top: 0.25rem; }
+    .budget-card-val { font-family: var(--ff-display); font-size: 1.25rem; color: var(--terra-lt); font-weight: 700; }
+    .budget-card-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone); margin-top: 0.25rem; }
+
     #map {
       margin-top: 2rem;
-      border-radius: var(--radius);
+      border-radius: 14px;
       overflow: hidden;
-      border: 1px solid rgba(196,98,58,0.15);
+      border: 1px solid rgba(196,98,58,0.2);
     }
-    .form-control:focus-visible { outline: none; }
   </style>
 </head>
 <body>
@@ -209,104 +590,252 @@
 <header class="page-header">
   <div class="page-header-bg"></div>
   <div class="page-header-topo"></div>
-  <div class="page-header-road"></div>
   <div class="page-header-content">
-    <div class="section-label">Hit the Road</div>
-    <h1 class="section-title">Epic <em>Road Trip</em><br>Planner</h1>
-    <div class="terra-line"></div>
-    <p class="section-sub" style="margin-top:0.8rem;">
-      Set your start and end points, pick your dates, and we'll build the perfect multi-day driving route — with overnight stops, scenic detours, and real pricing.
+    <div class="section-label">Highway Intelligence</div>
+    <h1 class="section-title">Epic <em>Road Trip</em><br>Architect</h1>
+    <div class="terra-line" style="margin: 0.8rem auto 0;"></div>
+    <p class="section-sub" style="margin-top:0.9rem;">
+      Set your route, dates, and rhythm. We design the ultimate multi-day drive — with breathtaking view stops, hidden diners, and realistic budgets.
     </p>
   </div>
 </header>
 
 <!-- ── FORM SECTION ── -->
-<section style="padding-top: 2.5rem;">
+<section style="padding-top: 1.5rem;">
   <div class="form-wrapper">
 
     <!-- FORM CARD -->
     <div class="form-card">
-      <div class="form-card-header">
-        <div class="form-card-title">Route Details</div>
-        <div class="form-card-subtitle">Max 30 days. Daily driving capped at your chosen limit for a comfortable journey.</div>
-      </div>
-
       <form id="roadTripForm">
-        <!-- Route row -->
-        <div class="route-row">
-          <div class="form-group autocomplete-group" style="position:relative; z-index:21; animation-delay:0.05s; opacity:0; animation: slideUp 0.5s ease 0.05s both;">
-            <label class="form-label" for="start-point"><span class="required">*</span> Starting Point</label>
-            <input type="text" id="start-point" class="form-control" name="startLocation"
-              placeholder="City, region, or airport" required autocomplete="off" />
-            <ul id="startDropdown" class="autocomplete-dropdown"></ul>
+
+        <!-- 01: ROUTE BUILDER HERO -->
+        <div class="form-block route-builder-section">
+          <div class="form-block-header">
+            <span class="block-num">1</span>
+            <span class="block-title">Route Waypoints</span>
+            <span class="block-subtitle">Starting & Destination Cities</span>
           </div>
-          <div class="route-arrow">→</div>
-          <div class="form-group autocomplete-group" style="position:relative; z-index:20; animation-delay:0.1s; opacity:0; animation: slideUp 0.5s ease 0.1s both;">
-            <label class="form-label" for="end-point"><span class="required">*</span> Ending Point</label>
-            <input type="text" id="end-point" class="form-control" name="endLocation"
-              placeholder="City, region, or airport" required autocomplete="off" />
-            <ul id="endDropdown" class="autocomplete-dropdown"></ul>
+
+          <div class="route-inputs-grid">
+            <!-- Starting Point -->
+            <div class="route-input-group" style="z-index: 25;">
+              <div class="route-input-box">
+                <span class="route-icon">🛫</span>
+                <input type="text" id="start-point" name="startLocation" class="route-text-input"
+                  placeholder="Starting city, airport..." required autocomplete="off" />
+              </div>
+              <ul id="startDropdown" class="autocomplete-dropdown" style="display:none; position:absolute; top:calc(100% + 8px); left:0; right:0; width:100%; z-index:999999; background:#171310 !important; background-color:#171310 !important; border:1.5px solid rgba(196,98,58,0.45); border-radius:14px; box-shadow:0 25px 70px rgba(0,0,0,0.98), 0 0 0 1px rgba(196,98,58,0.25); max-height:250px; overflow-y:auto; padding:6px; margin:0; list-style:none;"></ul>
+            </div>
+
+            <!-- Swap button -->
+            <button type="button" id="swapBtn" class="route-swap-btn" title="Swap start & destination">⇄</button>
+
+            <!-- Ending Point -->
+            <div class="route-input-group" style="z-index: 20;">
+              <div class="route-input-box">
+                <span class="route-icon">🏁</span>
+                <input type="text" id="end-point" name="endLocation" class="route-text-input"
+                  placeholder="Ending city, destination..." required autocomplete="off" />
+              </div>
+              <ul id="endDropdown" class="autocomplete-dropdown" style="display:none; position:absolute; top:calc(100% + 8px); left:0; right:0; width:100%; z-index:999999; background:#171310 !important; background-color:#171310 !important; border:1.5px solid rgba(196,98,58,0.45); border-radius:14px; box-shadow:0 25px 70px rgba(0,0,0,0.98), 0 0 0 1px rgba(196,98,58,0.25); max-height:250px; overflow-y:auto; padding:6px; margin:0; list-style:none;"></ul>
+            </div>
+          </div>
+
+          <!-- Popular Road Trip Route Pills -->
+          <div class="route-chips-row">
+            <span style="font-size:0.74rem; color:var(--stone); text-transform:uppercase; letter-spacing:0.05em;">Iconic routes:</span>
+            <button type="button" class="route-chip-btn" data-start="San Francisco, United States" data-end="Los Angeles, United States">🌊 Pacific Coast Highway</button>
+            <button type="button" class="route-chip-btn" data-start="Naples, Italy" data-end="Salerno, Italy">🍋 Amalfi Coast</button>
+            <button type="button" class="route-chip-btn" data-start="Reykjavik, Iceland" data-end="Vik, Iceland">🌋 Ring Road South</button>
+            <button type="button" class="route-chip-btn" data-start="Chicago, United States" data-end="Santa Monica, United States">🛣️ Historic Route 66</button>
+            <button type="button" class="route-chip-btn" data-start="Manali, India" data-end="Leh, India">🏔️ Manali to Leh</button>
           </div>
         </div>
 
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label" for="start-date"><span class="required">*</span> Start Date</label>
-            <input type="date" id="start-date" class="form-control" name="startDate" required />
+        <!-- 02: DATES & DURATION -->
+        <div class="form-block">
+          <div class="form-block-header">
+            <span class="block-num">2</span>
+            <span class="block-title">Travel Dates</span>
+            <span class="block-subtitle">Maximum 30 days per plan</span>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="end-date"><span class="required">*</span> End Date</label>
-            <input type="date" id="end-date" class="form-control" name="endDate" required />
-            <div class="date-range-info" id="dateRangeInfo"></div>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="vehicle">Vehicle Type</label>
-            <select id="vehicle" class="form-control" name="vehicle">
-              <option value="car">🚗 Standard Car</option>
-              <option value="suv">🚙 SUV / 4x4</option>
-              <option value="rv">🚐 RV / Motorhome</option>
-              <option value="motorcycle">🏍️ Motorcycle</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="driving-hours">Max Driving Hours / Day</label>
-            <input type="number" id="driving-hours" class="form-control" name="drivingHours"
-              min="1" max="14" placeholder="e.g. 6" />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="budget">Budget Level</label>
-            <select id="budget" class="form-control" name="budget">
-              <option value="budget">🎒 Budget / Backpacker</option>
-              <option value="mid" selected>⭐ Mid-range</option>
-              <option value="luxury">✨ Luxury</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="travelers">Travelers</label>
-            <select id="travelers" class="form-control" name="travelers">
-              <option value="solo">👤 Solo</option>
-              <option value="couple">💑 Couple</option>
-              <option value="friends">👥 Group of Friends</option>
-              <option value="family">👨‍👩‍👧‍👦 Family</option>
-            </select>
-          </div>
-          <div class="form-group full-width">
-            <label class="form-label" for="stops">Preferred Experience</label>
-            <select id="stops" class="form-control" name="stops">
-              <option value="scenic">🏞️ Scenic Routes & Nature</option>
-              <option value="landmarks">🏛️ Historical Landmarks</option>
-              <option value="quirky">🎪 Quirky Roadside Attractions</option>
-              <option value="food">🍽️ Local Food & Diners</option>
-            </select>
+
+          <div class="dates-pace-grid">
+            <div class="date-card">
+              <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--stone);">Start Date</span>
+              <input type="date" id="start-date" name="startDate" class="date-input-field" required />
+            </div>
+            <div class="date-card">
+              <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--stone);">End Date</span>
+              <input type="date" id="end-date" name="endDate" class="date-input-field" required />
+              <div class="date-range-info" id="dateRangeInfo"></div>
+            </div>
           </div>
         </div>
 
-        <div class="form-submit-row">
-          <span style="font-size:0.78rem;color:var(--stone);">May take 15–20 seconds for longer trips</span>
-          <button type="submit" class="btn btn-terra btn-lg" id="generateBtn">
-            🚗 Generate Route
+        <!-- 03: VEHICLE TYPE -->
+        <div class="form-block">
+          <div class="form-block-header">
+            <span class="block-num">3</span>
+            <span class="block-title">Vehicle Type</span>
+          </div>
+
+          <div class="vehicle-grid">
+            <label class="vehicle-label">
+              <input type="radio" name="vehicle" value="car" checked class="vehicle-radio" />
+              <div class="vehicle-box">
+                <span class="vehicle-icon">🚗</span>
+                <span class="vehicle-name">Standard Car</span>
+                <span class="vehicle-sub">Sedan or Compact</span>
+              </div>
+            </label>
+
+            <label class="vehicle-label">
+              <input type="radio" name="vehicle" value="suv" class="vehicle-radio" />
+              <div class="vehicle-box">
+                <span class="vehicle-icon">🚙</span>
+                <span class="vehicle-name">SUV / 4x4</span>
+                <span class="vehicle-sub">Comfort & Trails</span>
+              </div>
+            </label>
+
+            <label class="vehicle-label">
+              <input type="radio" name="vehicle" value="rv" class="vehicle-radio" />
+              <div class="vehicle-box">
+                <span class="vehicle-icon">🚐</span>
+                <span class="vehicle-name">Camper / RV</span>
+                <span class="vehicle-sub">Home on Wheels</span>
+              </div>
+            </label>
+
+            <label class="vehicle-label">
+              <input type="radio" name="vehicle" value="motorcycle" class="vehicle-radio" />
+              <div class="vehicle-box">
+                <span class="vehicle-icon">🏍️</span>
+                <span class="vehicle-name">Motorcycle</span>
+                <span class="vehicle-sub">Pure Freedom</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 04: DAILY DRIVING HOURS PACE -->
+        <div class="form-block">
+          <div class="form-block-header">
+            <span class="block-num">4</span>
+            <span class="block-title">Daily Driving Limit</span>
+            <span class="block-subtitle">Strictly capped for comfort & safety</span>
+          </div>
+
+          <div class="hours-buttons-row">
+            <label class="hour-option-label">
+              <input type="radio" name="drivingHours" value="3-4" class="hour-radio" />
+              <div class="hour-box">
+                <div class="hour-title">☕ Relaxed Pace</div>
+                <div class="hour-desc">3–4 hours driving / day. Plenty of scenic rest stops & strolls.</div>
+              </div>
+            </label>
+
+            <label class="hour-option-label">
+              <input type="radio" name="drivingHours" value="5-6" checked class="hour-radio" />
+              <div class="hour-box">
+                <div class="hour-title">⚖️ Balanced Cruise</div>
+                <div class="hour-desc">5–6 hours driving / day. Perfect balance of distance & sights.</div>
+              </div>
+            </label>
+
+            <label class="hour-option-label">
+              <input type="radio" name="drivingHours" value="7-8" class="hour-radio" />
+              <div class="hour-box">
+                <div class="hour-title">⚡ Road Warrior</div>
+                <div class="hour-desc">7–8 hours driving / day. Maximum ground coverage.</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 05: TRAVELERS & BUDGET -->
+        <div class="form-block">
+          <div class="form-block-header">
+            <span class="block-num">5</span>
+            <span class="block-title">Travelers & Budget</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.2rem; margin-bottom:1.2rem;">
+            <div class="chips-grid" style="grid-template-columns: 1fr 1fr;">
+              <label class="chip-label">
+                <input type="radio" name="travelers" value="solo" checked class="chip-radio" />
+                <span class="chip-body">👤 Solo</span>
+              </label>
+              <label class="chip-label">
+                <input type="radio" name="travelers" value="couple" class="chip-radio" />
+                <span class="chip-body">💑 Couple</span>
+              </label>
+              <label class="chip-label">
+                <input type="radio" name="travelers" value="friends" class="chip-radio" />
+                <span class="chip-body">👥 Friends</span>
+              </label>
+              <label class="chip-label">
+                <input type="radio" name="travelers" value="family" class="chip-radio" />
+                <span class="chip-body">👨‍👩‍👧‍👦 Family</span>
+              </label>
+            </div>
+
+            <div>
+              <label class="chip-label" style="display:block; margin-bottom:0.5rem;">
+                <input type="radio" name="budget" value="budget" class="chip-radio" />
+                <span class="chip-body">🎒 Budget / Motels & Camp</span>
+              </label>
+              <label class="chip-label" style="display:block; margin-bottom:0.5rem;">
+                <input type="radio" name="budget" value="mid" checked class="chip-radio" />
+                <span class="chip-body">⭐ Balanced / Boutique Inns</span>
+              </label>
+              <label class="chip-label" style="display:block;">
+                <input type="radio" name="budget" value="luxury" class="chip-radio" />
+                <span class="chip-body">✨ Premium / Luxury Lodges</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 06: PREFERRED ROAD TRIP EXPERIENCE -->
+        <div class="form-block">
+          <div class="form-block-header">
+            <span class="block-num">6</span>
+            <span class="block-title">Preferred Detours & Sights</span>
+          </div>
+
+          <div class="stops-grid">
+            <label class="chip-label">
+              <input type="radio" name="stops" value="scenic" checked class="chip-radio" />
+              <span class="chip-body">🏞️ Scenic Routes & Nature</span>
+            </label>
+            <label class="chip-label">
+              <input type="radio" name="stops" value="landmarks" class="chip-radio" />
+              <span class="chip-body">🏛️ Historical Landmarks</span>
+            </label>
+            <label class="chip-label">
+              <input type="radio" name="stops" value="quirky" class="chip-radio" />
+              <span class="chip-body">🎪 Quirky Roadside Stops</span>
+            </label>
+            <label class="chip-label">
+              <input type="radio" name="stops" value="food" class="chip-radio" />
+              <span class="chip-body">🍽️ Local Food & Diners</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- SUBMIT BAR -->
+        <div class="submit-bar">
+          <div class="submit-info">
+            <span>⚡ Generates complete driving legs, overnight waypoints, and fuel estimates</span>
+          </div>
+          <button type="submit" class="btn-generate" id="generateBtn">
+            <span>🚗</span>
+            <span>Build Road Trip Route</span>
           </button>
         </div>
+
       </form>
     </div>
 
@@ -315,16 +844,23 @@
       <div class="result-card">
         <div class="result-header">
           <div>
-            <h2 class="section-title" style="font-size:1.6rem;">Your <em>Road Trip</em></h2>
+            <h2 class="section-title" style="font-size:1.6rem;">Your <em>Road Trip Route</em></h2>
             <div class="result-meta" id="resultMeta"></div>
           </div>
           <button type="button" class="btn btn-ghost" id="resetBtn">← New Route</button>
         </div>
+
+        <!-- Budget summary strip -->
         <div class="budget-strip" id="budgetStrip"></div>
+
+        <!-- Markdown content -->
         <div id="resultContent" class="markdown-body"></div>
+
+        <!-- Map -->
         <div id="map"></div>
       </div>
     </div>
+
   </div>
 </section>
 
@@ -340,6 +876,30 @@
   const startDateInput  = document.getElementById('start-date');
   const endDateInput    = document.getElementById('end-date');
   const dateInfo        = document.getElementById('dateRangeInfo');
+  const startInput      = document.getElementById('start-point');
+  const endInput        = document.getElementById('end-point');
+  const swapBtn         = document.getElementById('swapBtn');
+
+  const _cityCountry = { start: null, end: null };
+
+  // Swap locations button
+  swapBtn.addEventListener('click', () => {
+    const tempVal = startInput.value;
+    startInput.value = endInput.value;
+    endInput.value = tempVal;
+
+    const tempCountry = _cityCountry.start;
+    _cityCountry.start = _cityCountry.end;
+    _cityCountry.end = tempCountry;
+  });
+
+  // Popular route chips handler
+  document.querySelectorAll('.route-chip-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      startInput.value = btn.dataset.start;
+      endInput.value = btn.dataset.end;
+    });
+  });
 
   function daysBetween(a, b) {
     return Math.round((new Date(b) - new Date(a)) / 86400000);
@@ -355,7 +915,7 @@
       dateInfo.textContent = 'Maximum 30 days — end date will be capped.';
       dateInfo.className = 'date-range-info warn';
     } else {
-      dateInfo.textContent = `${d} day${d !== 1 ? 's' : ''} selected`;
+      dateInfo.textContent = `✨ ${d} day${d !== 1 ? 's' : ''} planned journey`;
       dateInfo.className = 'date-range-info ok';
     }
   }
@@ -371,6 +931,62 @@
   });
   endDateInput.addEventListener('change', updateDateInfo);
 
+  // ─── AUTOCOMPLETE SETUP ───
+  function setupCityInput(inputId, dropdownId, key) {
+    const input = document.getElementById(inputId);
+    const list  = document.getElementById(dropdownId);
+    let timer;
+
+    input.addEventListener('input', () => {
+      clearTimeout(timer);
+      _cityCountry[key] = null;
+      const q = input.value.trim();
+      if (q.length < 2) { list.style.display = 'none'; return; }
+      timer = setTimeout(() => fetchCities(q, list, input, key), 250);
+    });
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Escape') list.style.display = 'none';
+    });
+
+    document.addEventListener('click', e => {
+      if (!input.contains(e.target) && !list.contains(e.target))
+        list.style.display = 'none';
+    });
+  }
+
+  async function fetchCities(query, listEl, inputEl, key) {
+    const url = `https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/geonames-all-cities-with-a-population-1000/records?select=name,cou_name_en&where=search(name,"${encodeURIComponent(query)}")&limit=8&order_by=population%20desc`;
+    try {
+      const res  = await fetch(url);
+      const data = await res.json();
+      const results = data.results || [];
+      if (!results.length) { listEl.style.display = 'none'; return; }
+      listEl.innerHTML = results.map(r => `
+        <li data-val="${r.name}, ${r.cou_name_en}" data-country="${r.cou_name_en}">
+          <span style="display:flex; align-items:center; gap:0.6rem;">
+            <span style="color:#c4623a;">📍</span>
+            <span style="font-weight:500;">${r.name}</span>
+          </span>
+          <span class="country-pill">${r.cou_name_en}</span>
+        </li>
+      `).join('');
+      listEl.style.display = 'block';
+
+      listEl.querySelectorAll('li').forEach(li => {
+        li.addEventListener('click', () => {
+          inputEl.value = li.dataset.val;
+          _cityCountry[key] = li.dataset.country;
+          listEl.style.display = 'none';
+        });
+      });
+    } catch { listEl.style.display = 'none'; }
+  }
+
+  setupCityInput('start-point', 'startDropdown', 'start');
+  setupCityInput('end-point',   'endDropdown',   'end');
+
+  // ─── SUBMISSION ───
   roadTripForm.addEventListener('submit', async function(e) {
     e.preventDefault();
 
@@ -424,8 +1040,12 @@
            <span class="result-tag">${data.vehicle}</span>`;
 
         resultContainer.style.display = 'block';
-        resultContainer.style.animation = 'fadeUp 0.5s ease both';
-        setTimeout(() => resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+        resultContainer.style.opacity = '0';
+        setTimeout(() => {
+          resultContainer.style.animation = 'fadeUp 0.5s ease both';
+          resultContainer.style.opacity = '';
+          resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 80);
       } else {
         showToast(result.error || 'Something went wrong. Please try again.', 'error');
       }
@@ -447,55 +1067,6 @@
     dateInfo.textContent = '';
     roadTripForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
-
-  const _cityCountry = { start: null, end: null }; // tracks selected countries
-
-  function setupCityInput(inputId, dropdownId, key) {
-    const input = document.getElementById(inputId);
-    const list  = document.getElementById(dropdownId);
-    let timer;
-
-    input.addEventListener('input', () => {
-      clearTimeout(timer);
-      _cityCountry[key] = null; // reset on manual edit
-      const q = input.value.trim();
-      if (q.length < 2) { list.style.display = 'none'; return; }
-      timer = setTimeout(() => fetchCities(q, list, input, key), 300);
-    });
-
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Escape') list.style.display = 'none';
-    });
-
-    document.addEventListener('click', e => {
-      if (!input.contains(e.target) && !list.contains(e.target))
-        list.style.display = 'none';
-    });
-  }
-
-  async function fetchCities(query, listEl, inputEl, key) {
-    const url = `https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/geonames-all-cities-with-a-population-1000/records?select=name,cou_name_en&where=search(name,"${encodeURIComponent(query)}")&limit=8&order_by=population%20desc`;
-    try {
-      const res  = await fetch(url);
-      const data = await res.json();
-      const results = data.results || [];
-      if (!results.length) { listEl.style.display = 'none'; return; }
-      listEl.innerHTML = results.map(r =>
-        `<li data-val="${r.name}, ${r.cou_name_en}" data-country="${r.cou_name_en}"><span>${r.name}</span><span class="country-tag">— ${r.cou_name_en}</span></li>`
-      ).join('');
-      listEl.style.display = 'block';
-      listEl.querySelectorAll('li').forEach(li => {
-        li.addEventListener('click', () => {
-          inputEl.value = li.dataset.val;
-          _cityCountry[key] = li.dataset.country;
-          listEl.style.display = 'none';
-        });
-      });
-    } catch { listEl.style.display = 'none'; }
-  }
-
-  setupCityInput('start-point', 'startDropdown', 'start');
-  setupCityInput('end-point',   'endDropdown',   'end');
 </script>
 </body>
 </html>

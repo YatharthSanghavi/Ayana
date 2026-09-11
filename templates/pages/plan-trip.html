@@ -4,114 +4,526 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Plan a Trip — Ayana</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.0" />
   <style>
     /* ─── PAGE HEADER ─── */
     .page-header {
-      padding: clamp(7rem,16vw,11rem) clamp(1.5rem,5%,3rem) 3rem;
+      padding: clamp(6.5rem,14vw,9.5rem) clamp(1.5rem,5%,3rem) 2.5rem;
       position: relative;
       overflow: hidden;
+      text-align: center;
     }
     .page-header-bg {
       position: absolute; inset: 0;
       background:
-        radial-gradient(ellipse 60% 70% at 15% 50%, rgba(196,98,58,0.07), transparent),
-        linear-gradient(160deg, #0e0c0a 0%, #181310 100%);
+        radial-gradient(ellipse 70% 60% at 50% 40%, rgba(196,98,58,0.12), transparent 75%),
+        linear-gradient(160deg, #0e0c0a 0%, #16120e 100%);
     }
     .page-header-topo {
       position: absolute; inset: 0;
-      background-image: repeating-radial-gradient(ellipse 70% 55% at 80% 50%, transparent 0px, transparent 30px, rgba(196,98,58,0.025) 30px, rgba(196,98,58,0.025) 31px);
+      background-image: repeating-radial-gradient(ellipse 70% 55% at 50% 50%, transparent 0px, transparent 30px, rgba(196,98,58,0.025) 30px, rgba(196,98,58,0.025) 31px);
       pointer-events: none;
     }
-    .page-header-content { position: relative; z-index: 1; max-width: 600px; }
+    .page-header-content { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; }
 
     /* ─── FORM WRAPPER ─── */
     .form-wrapper {
-      max-width: 860px;
+      max-width: 920px;
       margin: 0 auto;
-      padding: 0 clamp(1.5rem,5%,3rem) 6rem;
+      padding: 0 clamp(1.2rem,4%,2.5rem) 6rem;
+      position: relative;
     }
 
     /* ─── FORM CARD ─── */
     .form-card {
-      padding: clamp(2rem,5vw,3rem);
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(196,98,58,0.18);
-      background: rgba(20,16,12,0.7);
-      backdrop-filter: blur(16px);
-      box-shadow: 0 24px 72px rgba(0,0,0,0.5);
+      padding: clamp(1.8rem,4vw,2.8rem);
+      border-radius: 24px;
+      border: 1px solid rgba(196,98,58,0.22);
+      background: linear-gradient(175deg, rgba(26,20,15,0.92) 0%, rgba(16,13,10,0.96) 100%);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.65), 0 0 1px 1px rgba(196,98,58,0.12);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      position: relative;
     }
-    .form-card-header {
+
+    /* Sectional blocks */
+    .form-block {
       margin-bottom: 2rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid rgba(196,98,58,0.12);
+      padding-bottom: 1.8rem;
+      border-bottom: 1px solid rgba(196,98,58,0.1);
+      position: relative;
     }
-    .form-card-title { font-family: var(--ff-display); font-size: 1.35rem; color: var(--cream); font-weight: 600; }
-    .form-card-subtitle { font-size: 0.84rem; color: var(--stone); margin-top: 0.3rem; }
-
-    /* ─── FORM GRID ─── */
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.2rem;
+    .form-block:last-of-type {
       margin-bottom: 1.5rem;
-      position: relative;
-      z-index: 1;
-    }
-    @media (max-width: 680px) { .form-grid { grid-template-columns: 1fr; } }
-    .full-width { grid-column: 1 / -1; }
-
-    .form-group {
-      opacity: 0;
-      animation: slideUp 0.5s ease both;
-      position: relative;
-      z-index: 1;
-    }
-    .form-group:nth-child(1) { animation-delay: 0.05s; }
-    .form-group:nth-child(2) { animation-delay: 0.1s; }
-    .form-group:nth-child(3) { animation-delay: 0.15s; }
-    .form-group:nth-child(4) { animation-delay: 0.2s; }
-    .form-group:nth-child(5) { animation-delay: 0.25s; }
-    .form-group:nth-child(6) { animation-delay: 0.3s; }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: none; }
+      padding-bottom: 0;
+      border-bottom: none;
     }
 
-    .autocomplete-group {
-      position: relative;
-      z-index: 50;
-    }
-    .autocomplete-group:focus-within {
-      z-index: 100;
-    }
-
-    /* ─── SUBMIT ROW ─── */
-    .form-submit-row {
+    .form-block-header {
       display: flex;
-      justify-content: flex-end;
       align-items: center;
-      gap: 1rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid rgba(196,98,58,0.1);
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+    .block-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(196,98,58,0.15);
+      border: 1px solid rgba(196,98,58,0.3);
+      color: var(--terra-lt);
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .block-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--cream);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-family: var(--ff-ui);
+    }
+    .block-subtitle {
+      font-size: 0.8rem;
+      color: var(--stone);
+      margin-left: auto;
+    }
+
+    /* ─── DESTINATION HERO INPUT ─── */
+    .destination-section {
+      position: relative;
+      z-index: 1000;
+    }
+    .destination-input-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      border-radius: 14px;
+      background: #110e0b;
+      border: 1.5px solid rgba(196,98,58,0.28);
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+    }
+    .destination-input-box:focus-within {
+      border-color: var(--terra);
+      box-shadow: 0 0 0 4px rgba(196,98,58,0.16), 0 8px 25px rgba(0,0,0,0.4);
+    }
+    .dest-icon {
+      padding-left: 1.2rem;
+      font-size: 1.25rem;
+      color: var(--terra);
+      flex-shrink: 0;
+    }
+    .dest-input {
+      width: 100%;
+      padding: 1.05rem 1rem;
+      background: transparent;
+      border: none;
+      color: var(--cream);
+      font-size: 1.08rem;
+      font-family: var(--ff-ui);
+      outline: none;
+    }
+    .dest-input::placeholder {
+      color: #6d6258;
+      font-size: 0.98rem;
+    }
+    .dest-clear-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--stone);
+      padding: 0 1.1rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .dest-clear-btn:hover { color: var(--cream); }
+
+    /* Trending destinations chips */
+    .trending-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.85rem;
       flex-wrap: wrap;
     }
-    .btn-terra:disabled { opacity: 0.55; cursor: not-allowed; }
+    .trending-label {
+      font-size: 0.74rem;
+      color: var(--stone);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .trend-chip {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(196,98,58,0.18);
+      color: var(--cream-3);
+      font-size: 0.78rem;
+      padding: 0.28rem 0.65rem;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .trend-chip:hover {
+      background: rgba(196,98,58,0.15);
+      border-color: rgba(196,98,58,0.45);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
 
-    /* ─── RESULT ─── */
-    #resultContainer {
-      max-width: 860px;
-      margin: 2rem auto 0;
+    /* ─── GUARANTEED NON-BLUR AUTOCOMPLETE DROPDOWN ─── */
+    .autocomplete-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      width: 100%;
+      z-index: 999999;
+      background: #171310 !important;
+      background-color: #171310 !important;
+      border: 1.5px solid rgba(196,98,58,0.45);
+      border-radius: 14px;
+      padding: 6px;
+      margin: 0;
+      list-style: none;
+      box-shadow: 0 25px 70px rgba(0,0,0,0.98), 0 0 0 1px rgba(196,98,58,0.25);
+      max-height: 250px;
+      overflow-y: auto;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    .autocomplete-dropdown li {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      color: #ede3d5;
+      background: #171310;
+      border-bottom: 1px solid rgba(196,98,58,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.15s ease;
+      margin-bottom: 2px;
+    }
+    .autocomplete-dropdown li:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    .autocomplete-dropdown li:hover {
+      background: rgba(196,98,58,0.22) !important;
+      color: #ffffff !important;
+      padding-left: 1.15rem;
+    }
+    .autocomplete-dropdown li .country-pill {
+      font-size: 0.75rem;
+      color: #b8a896;
+      background: rgba(196,98,58,0.12);
+      border: 1px solid rgba(196,98,58,0.25);
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+    .autocomplete-dropdown::-webkit-scrollbar { width: 6px; }
+    .autocomplete-dropdown::-webkit-scrollbar-track { background: #171310; border-radius: 8px; }
+    .autocomplete-dropdown::-webkit-scrollbar-thumb { background: rgba(196,98,58,0.35); border-radius: 8px; }
+
+    /* ─── DURATION & GROUP ROW ─── */
+    .duration-row {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 700px) {
+      .duration-row { grid-template-columns: 1fr; }
+    }
+
+    /* Duration Stepper & Pills */
+    .duration-control-box {
+      background: #120e0b;
+      border: 1px solid rgba(196,98,58,0.2);
+      border-radius: 14px;
+      padding: 1rem 1.2rem;
+    }
+    .duration-stepper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+    }
+    .stepper-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: rgba(196,98,58,0.12);
+      border: 1px solid rgba(196,98,58,0.3);
+      color: var(--cream);
+      font-size: 1.3rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .stepper-btn:hover {
+      background: rgba(196,98,58,0.25);
+      color: #ffffff;
+      border-color: var(--terra);
+    }
+    .stepper-display {
+      text-align: center;
+    }
+    .stepper-num {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--terra-lt);
+      font-family: var(--ff-display);
+      line-height: 1;
+    }
+    .stepper-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--stone);
+      margin-top: 0.2rem;
+    }
+    .duration-pills {
+      display: flex;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+    .duration-pill-btn {
+      flex: 1;
+      min-width: 44px;
+      padding: 0.35rem 0.5rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(196,98,58,0.16);
+      border-radius: 8px;
+      color: var(--cream-3);
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .duration-pill-btn:hover {
+      border-color: var(--terra);
+      color: #ffffff;
+    }
+    .duration-pill-btn.active {
+      background: var(--terra);
+      border-color: var(--terra);
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    /* ─── VISUAL CHOICE CARDS (BUDGET) ─── */
+    .budget-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.85rem;
+    }
+    @media (max-width: 650px) {
+      .budget-cards-grid { grid-template-columns: 1fr; }
+    }
+    .choice-card-label {
+      cursor: pointer;
+      position: relative;
+    }
+    .choice-radio {
+      position: absolute;
       opacity: 0;
-      animation: fadeUp 0.5s ease both;
+      pointer-events: none;
+    }
+    .choice-card-body {
+      background: #120e0b;
+      border: 1.5px solid rgba(196,98,58,0.18);
+      border-radius: 14px;
+      padding: 1.1rem 1rem;
+      transition: all 0.2s ease;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .choice-card-label:hover .choice-card-body {
+      border-color: rgba(196,98,58,0.4);
+      background: rgba(196,98,58,0.04);
+      transform: translateY(-2px);
+    }
+    .choice-radio:checked + .choice-card-body {
+      border-color: var(--terra);
+      background: rgba(196,98,58,0.11);
+      box-shadow: 0 0 25px rgba(196,98,58,0.22);
+    }
+    .choice-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.4rem;
+    }
+    .choice-icon { font-size: 1.35rem; }
+    .choice-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--terra-lt);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .choice-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--cream);
+      margin-bottom: 0.3rem;
+    }
+    .choice-desc {
+      font-size: 0.77rem;
+      color: var(--stone);
+      line-height: 1.4;
+      margin-top: auto;
+    }
+
+    /* ─── CHIPS (WHO'S TRAVELING & VIBES) ─── */
+    .chips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 0.7rem;
+    }
+    .chip-label {
+      cursor: pointer;
+      position: relative;
+    }
+    .chip-radio {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .chip-body {
+      background: #120e0b;
+      border: 1px solid rgba(196,98,58,0.18);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 0.88rem;
+      color: var(--cream-2);
+      transition: all 0.15s ease;
+    }
+    .chip-label:hover .chip-body {
+      border-color: rgba(196,98,58,0.4);
+      background: rgba(196,98,58,0.06);
+    }
+    .chip-radio:checked + .chip-body {
+      border-color: var(--terra);
+      background: rgba(196,98,58,0.16);
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 0 16px rgba(196,98,58,0.2);
+    }
+
+    /* ─── SPECIAL INTERESTS TEXTAREA ─── */
+    .interests-textarea {
+      width: 100%;
+      background: #110e0b;
+      border: 1.5px solid rgba(196,98,58,0.2);
+      border-radius: 14px;
+      padding: 0.9rem 1.1rem;
+      color: var(--cream);
+      font-size: 0.92rem;
+      outline: none;
+      resize: vertical;
+      min-height: 85px;
+      transition: border-color 0.2s;
+    }
+    .interests-textarea:focus {
+      border-color: var(--terra);
+      box-shadow: 0 0 0 3px rgba(196,98,58,0.15);
+    }
+    .quick-interests-row {
+      display: flex;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+      margin-top: 0.65rem;
+    }
+    .quick-interest-pill {
+      background: rgba(255,255,255,0.025);
+      border: 1px dashed rgba(196,98,58,0.22);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: var(--stone);
+      padding: 0.25rem 0.65rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .quick-interest-pill:hover {
+      border-color: var(--terra);
+      color: var(--cream);
+      background: rgba(196,98,58,0.1);
+    }
+
+    /* ─── SUBMIT ACTION ─── */
+    .submit-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.2rem;
+      padding-top: 1.8rem;
+      border-top: 1px solid rgba(196,98,58,0.12);
+      flex-wrap: wrap;
+    }
+    .submit-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--stone);
+      font-size: 0.82rem;
+    }
+    .btn-generate {
+      background: linear-gradient(135deg, #d4683e 0%, #b84f27 100%);
+      color: #ffffff;
+      border: none;
+      padding: 0.95rem 2.2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      box-shadow: 0 8px 30px rgba(196,98,58,0.35);
+      transition: all 0.2s ease;
+    }
+    .btn-generate:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 36px rgba(196,98,58,0.45);
+      background: linear-gradient(135deg, #de7449 0%, #c4552b 100%);
+    }
+    .btn-generate:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ─── RESULT SECTION ─── */
+    #resultContainer {
+      max-width: 920px;
+      margin: 2.5rem auto 0;
+      opacity: 0;
     }
     .result-card {
       padding: clamp(2rem,5vw,3rem);
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(196,98,58,0.2);
-      background: rgba(20,16,12,0.7);
-      backdrop-filter: blur(16px);
-      box-shadow: 0 24px 72px rgba(0,0,0,0.5);
+      border-radius: 24px;
+      border: 1px solid rgba(196,98,58,0.22);
+      background: rgba(20,16,12,0.85);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
     }
     .result-header {
       display: flex;
@@ -128,44 +540,40 @@
       display: inline-flex;
       align-items: center;
       gap: 0.3rem;
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       font-weight: 600;
       letter-spacing: 0.07em;
       text-transform: uppercase;
       color: var(--terra);
       background: rgba(196,98,58,0.1);
       border: 1px solid rgba(196,98,58,0.2);
-      padding: 0.22rem 0.6rem;
-      border-radius: 4px;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
     }
 
-    /* ─── BUDGET SUMMARY CARDS ─── */
+    /* Budget summary strip */
     .budget-strip {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
       gap: 0.8rem;
       margin: 1.5rem 0 2rem;
     }
     .budget-card {
-      padding: 1rem;
+      padding: 1.1rem 0.8rem;
       background: rgba(196,98,58,0.06);
-      border: 1px solid rgba(196,98,58,0.14);
-      border-radius: var(--radius-sm);
+      border: 1px solid rgba(196,98,58,0.15);
+      border-radius: 10px;
       text-align: center;
     }
-    .budget-card-val { font-family: var(--ff-display); font-size: 1.2rem; color: var(--terra-lt); font-weight: 700; }
-    .budget-card-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone); margin-top: 0.25rem; }
+    .budget-card-val { font-family: var(--ff-display); font-size: 1.25rem; color: var(--terra-lt); font-weight: 700; }
+    .budget-card-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone); margin-top: 0.25rem; }
 
-    /* ─── MAP ─── */
     #map {
       margin-top: 2rem;
-      border-radius: var(--radius);
+      border-radius: 14px;
       overflow: hidden;
-      border: 1px solid rgba(196,98,58,0.15);
+      border: 1px solid rgba(196,98,58,0.2);
     }
-
-    /* ─── FOCUS ─── */
-    .form-control:focus-visible { outline: none; }
   </style>
 </head>
 <body>
@@ -177,82 +585,224 @@
   <div class="page-header-bg"></div>
   <div class="page-header-topo"></div>
   <div class="page-header-content">
-    <div class="section-label">Plan Your Journey</div>
-    <h1 class="section-title">Design Your<br><em>Dream Trip</em></h1>
-    <div class="terra-line"></div>
-    <p class="section-sub" style="margin-top:0.8rem;">
-      Tell us where, when, and how you like to travel. Our AI will build a complete, day-by-day itinerary tailored to you.
+    <div class="section-label">AI Journey Architect</div>
+    <h1 class="section-title">Design Your<br><em>Dream Itinerary</em></h1>
+    <div class="terra-line" style="margin: 0.8rem auto 0;"></div>
+    <p class="section-sub" style="margin-top:0.9rem;">
+      Choose your destination, rhythm, and style. Our intelligence crafts an authentic, day-by-day journey tailored to your exact budget.
     </p>
   </div>
 </header>
 
 <!-- ── FORM SECTION ── -->
-<section style="padding-top: 2.5rem;">
+<section style="padding-top: 1.5rem;">
   <div class="form-wrapper">
 
     <!-- FORM CARD -->
     <div class="form-card">
-      <div class="form-card-header">
-        <div class="form-card-title">Trip Details</div>
-        <div class="form-card-subtitle">Fill in the details below — the more specific, the better your plan.</div>
-      </div>
-
       <form id="planForm">
-        <div class="form-grid">
-          <div class="form-group full-width autocomplete-group" style="position:relative; z-index:50;">
-            <label class="form-label" for="destination"><span class="required">*</span> Destination</label>
-            <input type="text" id="destination" class="form-control" name="destination"
-              placeholder="e.g. Paris, Tokyo, Shimla..." required autocomplete="off" />
-            <ul id="destinationDropdown" class="autocomplete-dropdown"></ul>
+
+        <!-- 01: DESTINATION SEARCH HERO -->
+        <div class="form-block destination-section">
+          <div class="form-block-header">
+            <span class="block-num">1</span>
+            <span class="block-title">Destination</span>
+            <span class="block-subtitle">Where are you heading?</span>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="days"><span class="required">*</span> Duration (Days)</label>
-            <input type="number" id="days" class="form-control" name="days"
-              min="1" max="30" placeholder="e.g. 5" required />
+
+          <div style="position: relative; z-index: 10000;">
+            <div class="destination-input-box">
+              <span class="dest-icon">📍</span>
+              <input type="text" id="destination" name="destination" class="dest-input"
+                placeholder="Search city, region, or island (e.g. Kyoto, Amalfi, Zurich)..."
+                required autocomplete="off" />
+              <button type="button" id="destClear" class="dest-clear-btn" aria-label="Clear destination">✕</button>
+            </div>
+
+            <!-- Absolute top-layer solid dropdown -->
+            <ul id="destinationDropdown" class="autocomplete-dropdown" style="display:none; position:absolute; top:calc(100% + 8px); left:0; right:0; width:100%; z-index:999999; background:#171310 !important; background-color:#171310 !important; border:1.5px solid rgba(196,98,58,0.45); border-radius:14px; box-shadow:0 25px 70px rgba(0,0,0,0.98), 0 0 0 1px rgba(196,98,58,0.25); max-height:250px; overflow-y:auto; padding:6px; margin:0; list-style:none;"></ul>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="budget"><span class="required">*</span> Budget Level</label>
-            <select id="budget" class="form-control" name="budget" required>
-              <option value="" disabled selected>Select budget…</option>
-              <option value="budget">🎒 Backpacker / Budget</option>
-              <option value="mid">⭐ Mid-range / Standard</option>
-              <option value="luxury">✨ Luxury / Premium</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="travelers"><span class="required">*</span> Who's Traveling?</label>
-            <select id="travelers" class="form-control" name="travelers" required>
-              <option value="" disabled selected>Select group…</option>
-              <option value="solo">👤 Solo Traveler</option>
-              <option value="couple">💑 Couple</option>
-              <option value="family">👨‍👩‍👧‍👦 Family with Kids</option>
-              <option value="friends">👥 Group of Friends</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="tripType"><span class="required">*</span> Trip Style</label>
-            <select id="tripType" class="form-control" name="tripType" required>
-              <option value="" disabled selected>Select style…</option>
-              <option value="relax">🏖️ Relaxation & Beaches</option>
-              <option value="culture">🏛️ Culture & History</option>
-              <option value="adventure">🏔️ Adventure & Outdoors</option>
-              <option value="food">🍽️ Food & Culinary</option>
-              <option value="nightlife">🎉 Party & Nightlife</option>
-            </select>
-          </div>
-          <div class="form-group full-width">
-            <label class="form-label" for="interests">Special Interests / Requests <span style="color:var(--stone);font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
-            <textarea id="interests" class="form-control" name="interests" rows="3"
-              placeholder="e.g. Must visit local markets, avoid tourist traps, include a hiking trail, vegetarian food only…"></textarea>
+
+          <!-- Quick Trending Destination Pills -->
+          <div class="trending-row">
+            <span class="trending-label">Trending:</span>
+            <button type="button" class="trend-chip" data-dest="Tokyo, Japan">🗼 Tokyo</button>
+            <button type="button" class="trend-chip" data-dest="Paris, France">🥐 Paris</button>
+            <button type="button" class="trend-chip" data-dest="Rome, Italy">🍕 Rome</button>
+            <button type="button" class="trend-chip" data-dest="Bali, Indonesia">🏝️ Bali</button>
+            <button type="button" class="trend-chip" data-dest="Swiss Alps, Switzerland">🏔️ Swiss Alps</button>
+            <button type="button" class="trend-chip" data-dest="New York, United States">🗽 New York</button>
           </div>
         </div>
 
-        <div class="form-submit-row">
-          <span style="font-size:0.78rem;color:var(--stone);">Takes about 10–15 seconds</span>
-          <button type="submit" class="btn btn-terra btn-lg" id="generateBtn">
-            ✦ Generate Itinerary
+        <!-- 02: DURATION & TRAVEL COMPANIONS -->
+        <div class="form-block">
+          <div class="duration-row">
+            <!-- Duration -->
+            <div>
+              <div class="form-block-header">
+                <span class="block-num">2</span>
+                <span class="block-title">Trip Duration</span>
+              </div>
+              <div class="duration-control-box">
+                <div class="duration-stepper">
+                  <button type="button" class="stepper-btn" id="daysMinus" title="Subtract day">−</button>
+                  <div class="stepper-display">
+                    <div class="stepper-num" id="stepperDisplay">5</div>
+                    <div class="stepper-label">Days Total</div>
+                  </div>
+                  <button type="button" class="stepper-btn" id="daysPlus" title="Add day">+</button>
+                </div>
+                <!-- Hidden input for form submission -->
+                <input type="hidden" id="days" name="days" value="5" />
+                <div class="duration-pills">
+                  <button type="button" class="duration-pill-btn" data-days="3">3d</button>
+                  <button type="button" class="duration-pill-btn active" data-days="5">5d</button>
+                  <button type="button" class="duration-pill-btn" data-days="7">7d</button>
+                  <button type="button" class="duration-pill-btn" data-days="10">10d</button>
+                  <button type="button" class="duration-pill-btn" data-days="14">14d</button>
+                  <button type="button" class="duration-pill-btn" data-days="21">21d</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Who's Traveling -->
+            <div>
+              <div class="form-block-header">
+                <span class="block-num">3</span>
+                <span class="block-title">Travel Companions</span>
+              </div>
+              <div class="chips-grid" style="grid-template-columns: 1fr 1fr;">
+                <label class="chip-label">
+                  <input type="radio" name="travelers" value="solo" checked class="chip-radio" />
+                  <span class="chip-body">👤 Solo Explorer</span>
+                </label>
+                <label class="chip-label">
+                  <input type="radio" name="travelers" value="couple" class="chip-radio" />
+                  <span class="chip-body">💑 Couple</span>
+                </label>
+                <label class="chip-label">
+                  <input type="radio" name="travelers" value="family" class="chip-radio" />
+                  <span class="chip-body">👨‍👩‍👧‍👦 Family</span>
+                </label>
+                <label class="chip-label">
+                  <input type="radio" name="travelers" value="friends" class="chip-radio" />
+                  <span class="chip-body">👥 Group of Friends</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 03: BUDGET LEVEL -->
+        <div class="form-block">
+          <div class="form-block-header">
+            <span class="block-num">4</span>
+            <span class="block-title">Budget Tier</span>
+            <span class="block-subtitle">Choose your comfort level</span>
+          </div>
+
+          <div class="budget-cards-grid">
+            <label class="choice-card-label">
+              <input type="radio" name="budget" value="budget" class="choice-radio" />
+              <div class="choice-card-body">
+                <div class="choice-header">
+                  <span class="choice-icon">🎒</span>
+                  <span class="choice-badge">Economy</span>
+                </div>
+                <div class="choice-title">Budget Explorer</div>
+                <div class="choice-desc">Hostels, boutique guesthouses, street bites & public transit. (~$30–$60/day)</div>
+              </div>
+            </label>
+
+            <label class="choice-card-label">
+              <input type="radio" name="budget" value="mid" checked class="choice-radio" />
+              <div class="choice-card-body">
+                <div class="choice-header">
+                  <span class="choice-icon">⭐</span>
+                  <span class="choice-badge" style="color:var(--cream);">Standard</span>
+                </div>
+                <div class="choice-title">Balanced Mid-Range</div>
+                <div class="choice-desc">3–4★ hotels, atmospheric local bistros, guided visits & taxis. (~$100–$180/day)</div>
+              </div>
+            </label>
+
+            <label class="choice-card-label">
+              <input type="radio" name="budget" value="luxury" class="choice-radio" />
+              <div class="choice-card-body">
+                <div class="choice-header">
+                  <span class="choice-icon">✨</span>
+                  <span class="choice-badge" style="color:var(--terra-pale);">Luxury</span>
+                </div>
+                <div class="choice-title">Premium / Luxury</div>
+                <div class="choice-desc">5-star luxury resorts, fine dining, private transfers & VIP entry. (~$300+/day)</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 04: TRIP STYLE & VIBE -->
+        <div class="form-block">
+          <div class="form-block-header">
+            <span class="block-num">5</span>
+            <span class="block-title">Trip Style & Vibe</span>
+          </div>
+
+          <div class="chips-grid">
+            <label class="chip-label">
+              <input type="radio" name="tripType" value="relax" checked class="chip-radio" />
+              <span class="chip-body">🏖️ Relaxation & Beaches</span>
+            </label>
+            <label class="chip-label">
+              <input type="radio" name="tripType" value="culture" class="chip-radio" />
+              <span class="chip-body">🏛️ Culture & History</span>
+            </label>
+            <label class="chip-label">
+              <input type="radio" name="tripType" value="adventure" class="chip-radio" />
+              <span class="chip-body">🏔️ Nature & Adventure</span>
+            </label>
+            <label class="chip-label">
+              <input type="radio" name="tripType" value="food" class="chip-radio" />
+              <span class="chip-body">🍜 Food & Culinary</span>
+            </label>
+            <label class="chip-label">
+              <input type="radio" name="tripType" value="nightlife" class="chip-radio" />
+              <span class="chip-body">🎉 Nightlife & Social</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 05: SPECIAL INTERESTS & NOTES -->
+        <div class="form-block">
+          <div class="form-block-header">
+            <span class="block-num">6</span>
+            <span class="block-title">Custom Preferences</span>
+            <span class="block-subtitle">Optional details for AI personalization</span>
+          </div>
+
+          <textarea id="interests" name="interests" class="interests-textarea"
+            placeholder="e.g. Vegetarian food only, love hidden coffee shops, avoid steep hikes, include sunset viewpoints..."></textarea>
+
+          <div class="quick-interests-row">
+            <span style="font-size:0.75rem; color:var(--stone); line-height:2;">Quick add:</span>
+            <button type="button" class="quick-interest-pill" data-insert="Vegetarian / Vegan dining">🥗 Vegetarian food</button>
+            <button type="button" class="quick-interest-pill" data-insert="Avoid tourist traps, local gems only">🔍 Hidden local spots</button>
+            <button type="button" class="quick-interest-pill" data-insert="Scenic photography viewpoints">📸 Scenic photo spots</button>
+            <button type="button" class="quick-interest-pill" data-insert="Relaxed morning pace">☕ Slow relaxed mornings</button>
+          </div>
+        </div>
+
+        <!-- SUBMIT BAR -->
+        <div class="submit-bar">
+          <div class="submit-info">
+            <span>⚡ Takes ~10 seconds to generate tailored itinerary & map</span>
+          </div>
+          <button type="submit" class="btn-generate" id="generateBtn">
+            <span>✦</span>
+            <span>Generate Itinerary</span>
           </button>
         </div>
+
       </form>
     </div>
 
@@ -277,6 +827,7 @@
         <div id="map"></div>
       </div>
     </div>
+
   </div>
 </section>
 
@@ -285,11 +836,134 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
 <script>
-  const planForm      = document.getElementById('planForm');
-  const generateBtn   = document.getElementById('generateBtn');
+  const planForm        = document.getElementById('planForm');
+  const generateBtn     = document.getElementById('generateBtn');
   const resultContainer = document.getElementById('resultContainer');
-  const resetBtn      = document.getElementById('resetBtn');
+  const resetBtn        = document.getElementById('resetBtn');
+  const destInput       = document.getElementById('destination');
+  const destClear       = document.getElementById('destClear');
+  const destList        = document.getElementById('destinationDropdown');
 
+  // Pre-fill destination from URL query ?dest=
+  const urlDest = new URLSearchParams(location.search).get('dest');
+  if (urlDest) {
+    destInput.value = urlDest;
+    destClear.style.display = 'block';
+  }
+
+  // Clear button for destination input
+  destInput.addEventListener('input', () => {
+    destClear.style.display = destInput.value.length > 0 ? 'block' : 'none';
+  });
+  destClear.addEventListener('click', () => {
+    destInput.value = '';
+    destClear.style.display = 'none';
+    destList.style.display = 'none';
+    destInput.focus();
+  });
+
+  // Trending chips click handler
+  document.querySelectorAll('.trend-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      destInput.value = btn.dataset.dest;
+      destClear.style.display = 'block';
+      destList.style.display = 'none';
+      destInput.focus();
+    });
+  });
+
+  // Quick Interest tags click handler
+  const interestsArea = document.getElementById('interests');
+  document.querySelectorAll('.quick-interest-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const text = btn.dataset.insert;
+      if (interestsArea.value.trim().length > 0) {
+        interestsArea.value += `, ${text}`;
+      } else {
+        interestsArea.value = text;
+      }
+    });
+  });
+
+  // Duration Stepper & Pills
+  const daysHidden  = document.getElementById('days');
+  const daysDisplay = document.getElementById('stepperDisplay');
+  const daysMinus   = document.getElementById('daysMinus');
+  const daysPlus    = document.getElementById('daysPlus');
+  const durationPills = document.querySelectorAll('.duration-pill-btn');
+
+  function setDays(val) {
+    let n = parseInt(val, 10) || 5;
+    n = Math.max(1, Math.min(30, n));
+    daysHidden.value = n;
+    daysDisplay.textContent = n;
+    durationPills.forEach(p => {
+      p.classList.toggle('active', parseInt(p.dataset.days, 10) === n);
+    });
+  }
+
+  daysMinus.addEventListener('click', () => setDays(parseInt(daysHidden.value, 10) - 1));
+  daysPlus.addEventListener('click', () => setDays(parseInt(daysHidden.value, 10) + 1));
+  durationPills.forEach(pill => {
+    pill.addEventListener('click', () => setDays(pill.dataset.days));
+  });
+
+  // ─── AUTOCOMPLETE LOGIC ───
+  let timer;
+  destInput.addEventListener('input', () => {
+    clearTimeout(timer);
+    const q = destInput.value.trim();
+    if (q.length < 2) {
+      destList.style.display = 'none';
+      return;
+    }
+    timer = setTimeout(() => fetchCities(q, destList, destInput), 250);
+  });
+
+  destInput.addEventListener('keydown', e => {
+    if (e.key === 'Escape') destList.style.display = 'none';
+  });
+
+  document.addEventListener('click', e => {
+    if (!destInput.contains(e.target) && !destList.contains(e.target)) {
+      destList.style.display = 'none';
+    }
+  });
+
+  async function fetchCities(query, listEl, inputEl) {
+    const url = `https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/geonames-all-cities-with-a-population-1000/records?select=name,cou_name_en&where=search(name,"${encodeURIComponent(query)}")&limit=8&order_by=population%20desc`;
+    try {
+      const res  = await fetch(url);
+      const data = await res.json();
+      const results = data.results || [];
+      if (!results.length) {
+        listEl.style.display = 'none';
+        return;
+      }
+      listEl.innerHTML = results.map(r => `
+        <li data-val="${r.name}, ${r.cou_name_en}">
+          <span style="display:flex; align-items:center; gap:0.6rem;">
+            <span style="color:#c4623a;">📍</span>
+            <span style="font-weight:500;">${r.name}</span>
+          </span>
+          <span class="country-pill">${r.cou_name_en}</span>
+        </li>
+      `).join('');
+      listEl.style.display = 'block';
+
+      listEl.querySelectorAll('li').forEach(li => {
+        li.addEventListener('click', () => {
+          inputEl.value = li.dataset.val;
+          destClear.style.display = 'block';
+          listEl.style.display = 'none';
+        });
+      });
+    } catch {
+      listEl.style.display = 'none';
+    }
+  }
+
+  // ─── FORM SUBMISSION ───
   planForm.addEventListener('submit', async function(e) {
     e.preventDefault();
 
@@ -361,58 +1035,14 @@
 
   resetBtn?.addEventListener('click', () => {
     planForm.reset();
+    setDays(5);
+    destClear.style.display = 'none';
     resultContainer.style.display = 'none';
     document.getElementById('resultContent').innerHTML = '';
     document.getElementById('map').innerHTML = '';
     document.getElementById('budgetStrip').innerHTML = '';
     planForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
-
-  // Pre-fill destination from URL query ?dest=
-  const urlDest = new URLSearchParams(location.search).get('dest');
-  if (urlDest) document.getElementById('destination').value = urlDest;
-
-  (function() {
-    const input = document.getElementById('destination');
-    const list  = document.getElementById('destinationDropdown');
-    let timer;
-
-    input.addEventListener('input', () => {
-      clearTimeout(timer);
-      const q = input.value.trim();
-      if (q.length < 2) { list.style.display = 'none'; return; }
-      timer = setTimeout(() => fetchCities(q, list, input), 300);
-    });
-
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Escape') list.style.display = 'none';
-    });
-
-    document.addEventListener('click', e => {
-      if (!input.contains(e.target) && !list.contains(e.target))
-        list.style.display = 'none';
-    });
-  })();
-
-  async function fetchCities(query, listEl, inputEl) {
-    const url = `https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/geonames-all-cities-with-a-population-1000/records?select=name,cou_name_en&where=search(name,"${encodeURIComponent(query)}")&limit=8&order_by=population%20desc`;
-    try {
-      const res  = await fetch(url);
-      const data = await res.json();
-      const results = data.results || [];
-      if (!results.length) { listEl.style.display = 'none'; return; }
-      listEl.innerHTML = results.map(r =>
-        `<li data-val="${r.name}, ${r.cou_name_en}"><span>${r.name}</span><span class="country-tag">— ${r.cou_name_en}</span></li>`
-      ).join('');
-      listEl.style.display = 'block';
-      listEl.querySelectorAll('li').forEach(li => {
-        li.addEventListener('click', () => {
-          inputEl.value = li.dataset.val;
-          listEl.style.display = 'none';
-        });
-      });
-    } catch { listEl.style.display = 'none'; }
-  }
 </script>
 </body>
 </html>
