@@ -62,6 +62,18 @@
       gap: 1rem;
       align-items: end;
       margin-bottom: 1.2rem;
+      position: relative;
+      z-index: 50;
+    }
+    .route-row .autocomplete-group {
+      position: relative;
+      z-index: 20;
+    }
+    .route-row .autocomplete-group:first-child {
+      z-index: 21;
+    }
+    .route-row .autocomplete-group:focus-within {
+      z-index: 30;
     }
     .route-arrow {
       padding-bottom: 0.6rem;
@@ -83,6 +95,8 @@
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 1.2rem;
       margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
     }
     @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
     .full-width { grid-column: 1 / -1; }
@@ -90,6 +104,8 @@
     .form-group {
       opacity: 0;
       animation: slideUp 0.5s ease both;
+      position: relative;
+      z-index: 1;
     }
     .form-group:nth-child(1) { animation-delay: 0.05s; }
     .form-group:nth-child(2) { animation-delay: 0.1s; }
@@ -99,7 +115,7 @@
     .form-group:nth-child(6) { animation-delay: 0.3s; }
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: translateY(0); }
+      to   { opacity: 1; transform: none; }
     }
 
     /* Date range info */
@@ -218,28 +234,18 @@
       <form id="roadTripForm">
         <!-- Route row -->
         <div class="route-row">
-          <div class="form-group" style="position:relative; animation-delay:0.05s; opacity:0; animation: slideUp 0.5s ease 0.05s both;">
+          <div class="form-group autocomplete-group" style="position:relative; z-index:21; animation-delay:0.05s; opacity:0; animation: slideUp 0.5s ease 0.05s both;">
             <label class="form-label" for="start-point"><span class="required">*</span> Starting Point</label>
             <input type="text" id="start-point" class="form-control" name="startLocation"
               placeholder="City, region, or airport" required autocomplete="off" />
-            <ul id="startDropdown" style="
-              display:none; position:absolute; z-index:999; width:100%;
-              background:#1a1410; border:1px solid rgba(196,98,58,0.3);
-              border-radius:8px; margin-top:4px; padding:0; list-style:none;
-              box-shadow:0 8px 24px rgba(0,0,0,0.5); max-height:220px; overflow-y:auto;
-            "></ul>
+            <ul id="startDropdown" class="autocomplete-dropdown"></ul>
           </div>
           <div class="route-arrow">→</div>
-          <div class="form-group" style="position:relative; animation-delay:0.1s; opacity:0; animation: slideUp 0.5s ease 0.1s both;">
+          <div class="form-group autocomplete-group" style="position:relative; z-index:20; animation-delay:0.1s; opacity:0; animation: slideUp 0.5s ease 0.1s both;">
             <label class="form-label" for="end-point"><span class="required">*</span> Ending Point</label>
             <input type="text" id="end-point" class="form-control" name="endLocation"
               placeholder="City, region, or airport" required autocomplete="off" />
-            <ul id="endDropdown" style="
-              display:none; position:absolute; z-index:999; width:100%;
-              background:#1a1410; border:1px solid rgba(196,98,58,0.3);
-              border-radius:8px; margin-top:4px; padding:0; list-style:none;
-              box-shadow:0 8px 24px rgba(0,0,0,0.5); max-height:220px; overflow-y:auto;
-            "></ul>
+            <ul id="endDropdown" class="autocomplete-dropdown"></ul>
           </div>
         </div>
 
@@ -457,6 +463,10 @@
       timer = setTimeout(() => fetchCities(q, list, input, key), 300);
     });
 
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Escape') list.style.display = 'none';
+    });
+
     document.addEventListener('click', e => {
       if (!input.contains(e.target) && !list.contains(e.target))
         list.style.display = 'none';
@@ -471,11 +481,7 @@
       const results = data.results || [];
       if (!results.length) { listEl.style.display = 'none'; return; }
       listEl.innerHTML = results.map(r =>
-        `<li data-val="${r.name}, ${r.cou_name_en}" data-country="${r.cou_name_en}" style="
-          padding:0.55rem 1rem; cursor:pointer; font-size:0.875rem;
-          color:#d4c4b0; border-bottom:1px solid rgba(196,98,58,0.1);
-        " onmouseover="this.style.background='rgba(196,98,58,0.12)'"
-          onmouseout="this.style.background=''">${r.name} <span style="color:#7a6e64;font-size:0.78rem;">— ${r.cou_name_en}</span></li>`
+        `<li data-val="${r.name}, ${r.cou_name_en}" data-country="${r.cou_name_en}"><span>${r.name}</span><span class="country-tag">— ${r.cou_name_en}</span></li>`
       ).join('');
       listEl.style.display = 'block';
       listEl.querySelectorAll('li').forEach(li => {

@@ -55,6 +55,8 @@
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 1.2rem;
       margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
     }
     @media (max-width: 680px) { .form-grid { grid-template-columns: 1fr; } }
     .full-width { grid-column: 1 / -1; }
@@ -62,6 +64,8 @@
     .form-group {
       opacity: 0;
       animation: slideUp 0.5s ease both;
+      position: relative;
+      z-index: 1;
     }
     .form-group:nth-child(1) { animation-delay: 0.05s; }
     .form-group:nth-child(2) { animation-delay: 0.1s; }
@@ -71,7 +75,15 @@
     .form-group:nth-child(6) { animation-delay: 0.3s; }
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: translateY(0); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .autocomplete-group {
+      position: relative;
+      z-index: 50;
+    }
+    .autocomplete-group:focus-within {
+      z-index: 100;
     }
 
     /* ─── SUBMIT ROW ─── */
@@ -187,16 +199,11 @@
 
       <form id="planForm">
         <div class="form-grid">
-          <div class="form-group full-width" style="position:relative;">
+          <div class="form-group full-width autocomplete-group" style="position:relative; z-index:50;">
             <label class="form-label" for="destination"><span class="required">*</span> Destination</label>
             <input type="text" id="destination" class="form-control" name="destination"
               placeholder="e.g. Paris, Tokyo, Shimla..." required autocomplete="off" />
-            <ul id="destinationDropdown" style="
-              display:none; position:absolute; z-index:999; width:100%;
-              background:#1a1410; border:1px solid rgba(196,98,58,0.3);
-              border-radius:8px; margin-top:4px; padding:0; list-style:none;
-              box-shadow:0 8px 24px rgba(0,0,0,0.5); max-height:220px; overflow-y:auto;
-            "></ul>
+            <ul id="destinationDropdown" class="autocomplete-dropdown"></ul>
           </div>
           <div class="form-group">
             <label class="form-label" for="days"><span class="required">*</span> Duration (Days)</label>
@@ -377,10 +384,14 @@
       timer = setTimeout(() => fetchCities(q, list, input), 300);
     });
 
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Escape') list.style.display = 'none';
+    });
+
     document.addEventListener('click', e => {
-        if (!input.contains(e.target) && !list.contains(e.target))
-          list.style.display = 'none';
-      });
+      if (!input.contains(e.target) && !list.contains(e.target))
+        list.style.display = 'none';
+    });
   })();
 
   async function fetchCities(query, listEl, inputEl) {
@@ -391,11 +402,7 @@
       const results = data.results || [];
       if (!results.length) { listEl.style.display = 'none'; return; }
       listEl.innerHTML = results.map(r =>
-        `<li data-val="${r.name}, ${r.cou_name_en}" style="
-          padding:0.55rem 1rem; cursor:pointer; font-size:0.875rem;
-          color:#d4c4b0; border-bottom:1px solid rgba(196,98,58,0.1);
-        " onmouseover="this.style.background='rgba(196,98,58,0.12)'"
-          onmouseout="this.style.background=''">${r.name} <span style="color:#7a6e64;font-size:0.78rem;">— ${r.cou_name_en}</span></li>`
+        `<li data-val="${r.name}, ${r.cou_name_en}"><span>${r.name}</span><span class="country-tag">— ${r.cou_name_en}</span></li>`
       ).join('');
       listEl.style.display = 'block';
       listEl.querySelectorAll('li').forEach(li => {
