@@ -1,3 +1,6 @@
+from day_date.day_date_check import compute_road_trip_days
+
+
 def build_plan_trip_prompt(details: dict) -> str:
     destination   = details.get("destination", "the destination")
     days          = details.get("days", "3")
@@ -120,7 +123,10 @@ def build_road_trip_prompt(details: dict) -> str:
     stops         = details.get("stops", "scenic routes, local food, natural landmarks")
     travelers     = details.get("travelers", "solo traveler")
     budget        = details.get("budget", "moderate")
-    requested_days, planned_days = compute_road_trip_days(start_date, end_date, max_days=30)
+    requested_days = details.get("requestedDays")
+    planned_days = details.get("plannedDays")
+    if requested_days is None or planned_days is None:
+        requested_days, planned_days = compute_road_trip_days(start_date, end_date, max_days=30)
 
     return f"""
 You are a legendary road-trip planner who has driven every iconic highway in the world.
